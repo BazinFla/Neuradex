@@ -1,0 +1,56 @@
+# ==============================================================================
+# NeuraDex - .gitignore
+# ==============================================================================
+
+# --- Rust & Cargo Build Artifacts ---
+/target/
+target/
+**/*.rs.bk
+*.pdb
+
+# --- Linux Packaging & Flatpak Artifacts ---
+*.deb
+*.rpm
+*.tar.gz
+*.tar.xz
+*.AppImage
+*.apk
+.flatpak-builder/
+.flatpak/
+_build/
+
+# --- IDE & Text Editors ---
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.#*
+
+# --- Environment & Local Secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Operating System Files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# --- Logs & Diagnostics ---
+*.log
+*.tmp
+*.bak

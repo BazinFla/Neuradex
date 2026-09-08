@@ -1,0 +1,20 @@
+<svg height="1em" style="flex:none;line-height:1" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg">
+  <title>Default AI Model Color</title>
+  <defs>
+    <linearGradient id="neuradex-default-grad-1" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="50%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="neuradex-default-grad-2" x1="2" y1="7" x2="22" y2="17" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#EC4899"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  <path d="M12 2L2 7l10 5 10-5-10-5z" fill="url(#neuradex-default-grad-1)"/>
+  <path d="M2 17l10 5 10-5" fill="none" stroke="url(#neuradex-default-grad-2)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+  <path d="M2 12l10 5 10-5" fill="none" stroke="url(#neuradex-default-grad-1)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+  <circle cx="12" cy="7" r="1.5" fill="#FFFFFF"/>
+  <circle cx="12" cy="12" r="1.5" fill="#FFFFFF"/>
+  <circle cx="12" cy="17" r="1.5" fill="#FFFFFF"/>
+</svg>

@@ -1,0 +1,53 @@
+[package]
+name = "neuradex"
+version = "0.1.5"
+edition = "2021"
+authors = ["BazinFla"]
+description = "NeuraDex - Native Linux Control Center, Model Hub & Inference Studio"
+license = "GPL-3.0-or-later"
+
+[dependencies]
+gtk4 = { version = "0.9", features = ["v4_14"] }
+adw = { package = "libadwaita", version = "0.7", features = ["v1_5"] }
+glib = "0.20"
+gio = "0.20"
+tokio = { version = "1.43", features = ["full"] }
+reqwest = { version = "0.12", features = ["json", "stream"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+nvml-wrapper = "0.10"
+sysinfo = "0.33"
+chrono = "0.4"
+futures-util = "0.3"
+async-channel = "2.3"
+regex = "1.11"
+urlencoding = "2.1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+thiserror = "1.0"
+keyring = { version = "4.2", default-features = false, features = ["zbus-secret-service-keyring-store", "v1"] }
+
+[package.metadata.deb]
+name = "neuradex"
+maintainer = "BazinFla"
+copyright = "2026, BazinFla"
+extended-description = """\
+NeuraDex is a native Linux desktop control center, model hub, \
+and inference studio for local AI (Ollama)."""
+section = "utils"
+priority = "optional"
+depends = "$auto, libgtk-4-1 (>= 4.14), libadwaita-1-0 (>= 1.5), libssl3"
+assets = [
+    ["target/release/neuradex", "usr/bin/neuradex", "755"],
+    ["data/io.github.bazinfla.NeuraDex.desktop", "usr/share/applications/io.github.bazinfla.NeuraDex.desktop", "644"],
+    ["data/icons/io.github.bazinfla.NeuraDex.svg", "usr/share/icons/hicolor/scalable/apps/io.github.bazinfla.NeuraDex.svg", "644"],
+]
+
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/release/neuradex", dest = "/usr/bin/neuradex", mode = "755" },
+    { source = "data/io.github.bazinfla.NeuraDex.desktop", dest = "/usr/share/applications/io.github.bazinfla.NeuraDex.desktop", mode = "644" },
+    { source = "data/icons/io.github.bazinfla.NeuraDex.svg", dest = "/usr/share/icons/hicolor/scalable/apps/io.github.bazinfla.NeuraDex.svg", mode = "644" },
+]
+
+

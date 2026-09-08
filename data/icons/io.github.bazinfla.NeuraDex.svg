@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Squircle Palette -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1d1e2a" />
+      <stop offset="100%" stop-color="#151620" />
+    </linearGradient>
+
+    <!-- Chip Outer Bezel & Plate -->
+    <linearGradient id="chip-plate-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2b2e42" />
+      <stop offset="100%" stop-color="#222434" />
+    </linearGradient>
+    <linearGradient id="chip-recess-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1c1e2b" />
+      <stop offset="100%" stop-color="#26283a" />
+    </linearGradient>
+
+    <!-- Green Gradients (Chat) -->
+    <linearGradient id="green-cone-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#157a41" />
+      <stop offset="50%" stop-color="#1fa263" />
+      <stop offset="100%" stop-color="#2ec27e" />
+    </linearGradient>
+    <linearGradient id="green-funnel-depth" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#116836" />
+      <stop offset="100%" stop-color="#1da05e" />
+    </linearGradient>
+    <linearGradient id="green-ring-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3de28e" />
+      <stop offset="100%" stop-color="#25af6c" />
+    </linearGradient>
+    <radialGradient id="green-lens" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#229b5c" />
+      <stop offset="100%" stop-color="#13663b" />
+    </radialGradient>
+
+    <!-- Orange Gradients (Spark/Reasoning) -->
+    <linearGradient id="orange-cone-grad" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#b85006" />
+      <stop offset="50%" stop-color="#e77b19" />
+      <stop offset="100%" stop-color="#ff9c27" />
+    </linearGradient>
+    <linearGradient id="orange-funnel-depth" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#9c3f03" />
+      <stop offset="100%" stop-color="#db6e11" />
+    </linearGradient>
+    <linearGradient id="orange-ring-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffb742" />
+      <stop offset="100%" stop-color="#f18916" />
+    </linearGradient>
+    <radialGradient id="orange-lens" cx="60%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#df6e0e" />
+      <stop offset="100%" stop-color="#943e03" />
+    </radialGradient>
+
+    <!-- Blue Gradients (Code) -->
+    <linearGradient id="blue-cone-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#388bf2" />
+      <stop offset="100%" stop-color="#1c5cbd" />
+    </linearGradient>
+    <linearGradient id="blue-cone-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2266ce" />
+      <stop offset="100%" stop-color="#103f87" />
+    </linearGradient>
+    <linearGradient id="blue-ring-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5ea5ff" />
+      <stop offset="100%" stop-color="#2c7ee8" />
+    </linearGradient>
+    <radialGradient id="blue-lens" cx="50%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#1c60c4" />
+      <stop offset="100%" stop-color="#0e387a" />
+    </radialGradient>
+  </defs>
+
+  <!-- ========================================== -->
+  <!-- 1. BASE SQUIRCLE GNOME (Transparence ext.) -->
+  <!-- ========================================== -->
+  <rect x="30" y="30" width="452" height="452" rx="116" ry="116" fill="url(#bg-grad)" />
+
+  <!-- ========================================== -->
+  <!-- 2. CHÂSSIS DE PROCESSEUR DU NEURADEX       -->
+  <!-- ========================================== -->
+  <!-- Contour extérieur épais du boîtier -->
+  <rect x="116" y="114" width="280" height="284" rx="54" ry="54" 
+        fill="none" stroke="#383b54" stroke-width="16" />
+
+  <!-- Plaque intérieure du processeur -->
+  <rect x="130" y="128" width="252" height="256" rx="44" ry="44" 
+        fill="url(#chip-plate-grad)" />
+
+  <!-- Évidement / Cavité sous le slot -->
+  <rect x="150" y="264" width="212" height="104" rx="32" ry="32" 
+        fill="url(#chip-recess-grad)" 
+        stroke="#2f3248" stroke-width="2" />
+
+  <!-- Slot noir d'où s'échappent les modèles -->
+  <rect x="192" y="286" width="128" height="38" rx="14" ry="14" fill="#11111a" />
+
+  <!-- ========================================== -->
+  <!-- 3. LES 3 MODÈLES ÉJECTÉS DU SLOT           -->
+  <!-- ========================================== -->
+
+  <!-- A) MODÈLE GAUCHE : CHAT (VERT ÉMERAUDE) -->
+  <g id="model-chat">
+    <!-- Corps du cône 3D éjecté du slot -->
+    <path d="M 256 298 
+             L 142 292 
+             A 54 54 0 0 1 184 190 
+             Z" 
+          fill="url(#green-cone-grad)" />
+
+    <!-- Ombrage intérieur de profondeur du cône -->
+    <path d="M 256 298 
+             L 174 246 
+             A 54 54 0 0 1 184 190 
+             Z" 
+          fill="url(#green-funnel-depth)" opacity="0.6" />
+
+    <!-- Anneau / Lentille circulaire -->
+    <circle cx="140" cy="234" r="55" fill="url(#green-ring-grad)" />
+    <circle cx="140" cy="234" r="44" fill="url(#green-lens)" />
+
+    <!-- Pictogramme Bulle de Chat -->
+    <g transform="translate(140, 234) scale(1.4) translate(-14, -14)">
+      <rect x="2" y="3" width="24" height="17" rx="5.5" ry="5.5" fill="#cff8e1" />
+      <path d="M 7 19 L 4 25 L 13 19 Z" fill="#cff8e1" />
+    </g>
+  </g>
+
+  <!-- B) MODÈLE DROIT : SPARK / VISION (AMBRE / ORANGE) -->
+  <g id="model-spark">
+    <!-- Corps du cône 3D éjecté du slot -->
+    <path d="M 256 298 
+             L 328 190 
+             A 54 54 0 0 1 370 292 
+             Z" 
+          fill="url(#orange-cone-grad)" />
+
+    <!-- Ombrage intérieur de profondeur du cône -->
+    <path d="M 256 298 
+             L 328 190 
+             A 54 54 0 0 1 338 246 
+             Z" 
+          fill="url(#orange-funnel-depth)" opacity="0.6" />
+
+    <!-- Anneau / Lentille circulaire -->
+    <circle cx="372" cy="234" r="55" fill="url(#orange-ring-grad)" />
+    <circle cx="372" cy="234" r="44" fill="url(#orange-lens)" />
+
+    <!-- Pictogramme Étoile Étincelante (Sparkle) -->
+    <g transform="translate(372, 234) scale(1.45) translate(-14, -14)">
+      <!-- Étoile 4 branches -->
+      <path d="M 14 2 Q 14 14 26 14 Q 14 14 14 26 Q 14 14 2 14 Q 14 14 14 2 Z" fill="#ffffff" />
+      <!-- Traits d'étincelles diagonaux -->
+      <line x1="22" y1="6" x2="26" y2="2" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" />
+      <line x1="6" y1="22" x2="2" y2="26" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" />
+    </g>
+  </g>
+
+  <!-- C) MODÈLE CENTRAL : CODE </> (BLEU COBALT ADWAITA) -->
+  <g id="model-code">
+    <!-- Cône 3D avec facette bi-colore pour le volume -->
+    <path d="M 256 298 L 194 150 L 256 150 Z" fill="url(#blue-cone-left)" />
+    <path d="M 256 298 L 256 150 L 318 150 Z" fill="url(#blue-cone-right)" />
+
+    <!-- Anneau / Lentille circulaire (Au premier plan) -->
+    <circle cx="256" cy="146" r="64" fill="url(#blue-ring-grad)" />
+    <circle cx="256" cy="146" r="52" fill="url(#blue-lens)" />
+
+    <!-- Pictogramme Code </> en blanc pur haute visibilité -->
+    <g stroke="#ffffff" stroke-width="6.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <!-- Crochet gauche < -->
+      <path d="M 234 131 L 218 146 L 234 161" />
+      <!-- Barre oblique / -->
+      <path d="M 264 123 L 248 169" />
+      <!-- Crochet droit > -->
+      <path d="M 278 131 L 294 146 L 278 161" />
+    </g>
+  </g>
+
+</svg>

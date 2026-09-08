@@ -1,0 +1,141 @@
+name: Release & Packaging
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Manual version tag (optional, e.g. v0.1.4 — if empty, uses version from Cargo.toml)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build RPM, DEB & Publish GitHub Release
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo dependencies and target
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install system dependencies (GTK4, Libadwaita, RPM)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            pkg-config \
+            libssl-dev \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            rpm \
+            dpkg-dev
+
+      - name: Install cargo packaging tools
+        run: |
+          # Fast installation via prebuilt binstall if available, otherwise fallback to cargo install
+          if curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash; then
+            cargo binstall -y --no-confirm cargo-deb cargo-generate-rpm || cargo install cargo-deb cargo-generate-rpm --locked
+          else
+            cargo install cargo-deb cargo-generate-rpm --locked
+          fi
+
+      - name: Build release binary
+        run: |
+          cargo build --release
+          strip --strip-all target/release/neuradex
+
+      - name: Generate RPM package
+        run: |
+          cargo generate-rpm
+
+      - name: Generate DEB package
+        run: |
+          cargo deb --no-build
+
+      - name: Extract Changelog notes for this release
+        id: changelog
+        run: |
+          python3 -c '
+          import os, re
+
+          # 1. Version detection
+          raw_tag = os.environ.get("GITHUB_REF_NAME", "")
+          custom_tag = "${{ github.event.inputs.tag_name }}".strip()
+          tag = custom_tag if custom_tag else raw_tag
+
+          version = tag.lstrip("v").strip()
+
+          cargo_path = "Cargo.toml" if os.path.exists("Cargo.toml") else "neuradex/Cargo.toml"
+          changelog_path = "CHANGELOG.md" if os.path.exists("CHANGELOG.md") else "neuradex/CHANGELOG.md"
+
+          # If version is not set or branch is "main", extract from Cargo.toml
+          if not version or version == "main":
+              if os.path.exists(cargo_path):
+                  with open(cargo_path, "r", encoding="utf-8") as cf:
+                      m = re.search(r"version\s*=\s*\"([^\"]+)\"", cf.read())
+                      if m:
+                          version = m.group(1).strip()
+                          tag = f"v{version}"
+                          print(f"Detected version from {cargo_path}: {version}")
+
+          print(f"Extracting notes for version: {version} (tag: {tag})")
+
+          # 2. Search for the corresponding section in CHANGELOG.md
+          notes = ""
+          if os.path.exists(changelog_path):
+              with open(changelog_path, "r", encoding="utf-8") as f:
+                  content = f.read()
+
+              # Search for ## [version] block up to next ## [ or end
+              pattern = rf"(##\s*\[{re.escape(version)}\][^\n]*\n(?:(?!##\s*\[|---\s*\n##\s*\[).)*)"
+              match = re.search(pattern, content, re.DOTALL)
+              if match:
+                  notes = match.group(1).rstrip()
+                  # Remove optional trailing --- separator
+                  if notes.endswith("---"):
+                      notes = notes[:-3].rstrip()
+
+          # 3. Fallback if not found
+          if not notes:
+              print(f"Warning: no section [#{version}] found in {changelog_path}")
+              notes = f"## Release {tag}\n\nSee [CHANGELOG.md](https://github.com/BazinFla/Neuradex/blob/main/CHANGELOG.md) for the full list of changes."
+
+          # 4. Write file for release action
+          with open("RELEASE_NOTES.md", "w", encoding="utf-8") as out:
+              out.write(notes + "\n")
+
+          # Set output variables for subsequent steps
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as gh_out:
+              gh_out.write(f"version={version}\n")
+              gh_out.write(f"release_tag={tag}\n")
+              gh_out.write(f"release_name=NeuraDex {tag}\n")
+
+          print("=== EXTRACTED RELEASE NOTES PREVIEW ===")
+          print(notes[:500] + ("\n..." if len(notes) > 500 else ""))
+          '
+
+      - name: Create GitHub Release and Upload Packages
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.changelog.outputs.release_tag }}
+          name: ${{ steps.changelog.outputs.release_name }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            target/generate-rpm/*.rpm
+            target/debian/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

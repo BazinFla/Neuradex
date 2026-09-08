@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=NeuraDex
+GenericName=LLM & VRAM Control Center
+GenericName[fr]=Centre de contrôle LLM & VRAM
+Comment=Linux native control center, VRAM supervisor and inference studio for local AI
+Comment[fr]=Centre de contrôle, supervision VRAM et studio d'inférence natif Linux pour l'IA locale
+Exec=neuradex
+Icon=io.github.bazinfla.NeuraDex
+Terminal=false
+Type=Application
+Categories=Utility;Development;ArtificialIntelligence;
+Keywords=AI;LLM;Ollama;VRAM;GPU;Inference;MachineLearning;
+Keywords[fr]=IA;LLM;Ollama;VRAM;GPU;Inférence;Apprentissage;
+StartupNotify=true
+StartupWMClass=io.github.bazinfla.NeuraDex
