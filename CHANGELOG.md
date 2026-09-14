@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.1.6] — Ollama Modelfile Compilation & Storage Permissions Fix
+
+This patch release fixes the HTTP 500 error encountered when saving model settings and compiling Modelfiles in Ollama.
+
+### Fixed
+- **Ollama Storage Directory Permissions (`lifecycle.rs`)**:
+  - Prioritized `ollama:ollama` ownership for model directories across `migrate_models`, `apply_systemd_override`, and `fix_directory_permissions`.
+  - Preserved full read/write/execute rights for desktop users through `775` group permissions and POSIX ACLs (`setfacl`).
+  - Resolved Linux kernel `utimensat` / `os.Chtimes` `EPERM` ("operation not permitted") failure in the Ollama service when reusing weight blobs to compile model variants and persist custom parameters (`num_ctx`, `num_gpu`, etc.).
+- **API Diagnostics & Error Reporting (`client.rs`)**:
+  - Contextual interception of Ollama `chtimes: operation not permitted` errors in `create_model_stream`.
+  - Provides clear diagnostic guidance on storage ownership resolution rather than a generic HTTP 500 error toast.
+
+
 ## [0.1.5] — Diagnostic System & Release Preparation
 
 This release introduces a system and environment diagnostic tool.

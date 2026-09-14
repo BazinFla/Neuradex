@@ -541,9 +541,11 @@ if [ ${#FILES[@]} -gt 0 ]; then
 fi
 
 echo "PROGRESS:STEP:PERMISSIONS"
-(chown -R "$USER_NAME":ollama "$DST" 2>/dev/null || chown -R "$USER_NAME":"$USER_NAME" "$DST" 2>/dev/null || chown -R ollama:ollama "$DST" 2>/dev/null) || true
+(chown -R ollama:ollama "$DST" 2>/dev/null || chown -R "$USER_NAME":ollama "$DST" 2>/dev/null || chown -R "$USER_NAME":"$USER_NAME" "$DST" 2>/dev/null) || true
 chmod -R 775 "$DST" 2>/dev/null || true
-setfacl -d -m u:"$USER_NAME":rwx,g:ollama:rwx,o::rx "$DST" 2>/dev/null || true
+if command -v setfacl >/dev/null 2>&1; then
+    setfacl -R -m u:"$USER_NAME":rwx,g:ollama:rwx,d:u:"$USER_NAME":rwx,d:g:ollama:rwx,o::rx "$DST" 2>/dev/null || true
+fi
 
 # Ensure all parent path elements are traversable (+x) by the ollama user
 PARENT="$(dirname "$DST")"
@@ -805,9 +807,11 @@ fi
 
 if [ -n "$models_dir" ]; then
     mkdir -p "$models_dir"
-    (chown -R "$user_name":ollama "$models_dir" 2>/dev/null || chown -R "$user_name":"$user_name" "$models_dir" 2>/dev/null || chown -R ollama:ollama "$models_dir" 2>/dev/null || true)
+    (chown -R ollama:ollama "$models_dir" 2>/dev/null || chown -R "$user_name":ollama "$models_dir" 2>/dev/null || chown -R "$user_name":"$user_name" "$models_dir" 2>/dev/null || true)
     chmod -R 775 "$models_dir" 2>/dev/null || true
-    setfacl -d -m u:"$user_name":rwx,g:ollama:rwx,o::rx "$models_dir" 2>/dev/null || true
+    if command -v setfacl >/dev/null 2>&1; then
+        setfacl -R -m u:"$user_name":rwx,g:ollama:rwx,d:u:"$user_name":rwx,d:g:ollama:rwx,o::rx "$models_dir" 2>/dev/null || true
+    fi
 
     # Ensure all parent path elements are traversable (+x) by the ollama user
     parent="$(dirname "$models_dir")"
@@ -934,8 +938,11 @@ systemctl restart ollama
 dir="$1"
 user_name="$2"
 mkdir -p "$dir"
-(chown -R "$user_name":ollama "$dir" 2>/dev/null || chown -R "$user_name":"$user_name" "$dir" 2>/dev/null || chown -R ollama:ollama "$dir" 2>/dev/null || true)
+(chown -R ollama:ollama "$dir" 2>/dev/null || chown -R "$user_name":ollama "$dir" 2>/dev/null || chown -R "$user_name":"$user_name" "$dir" 2>/dev/null || true)
 chmod -R 775 "$dir"
+if command -v setfacl >/dev/null 2>&1; then
+    setfacl -R -m "u:$user_name:rwx,g:ollama:rwx,d:u:$user_name:rwx,d:g:ollama:rwx,o::rx" "$dir" 2>/dev/null || true
+fi
 "#;
         let res = Command::new("pkexec")
             .args(["bash", "-c", script, "--", &path_str, &user])

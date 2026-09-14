@@ -512,9 +512,26 @@ impl OllamaClient {
         if !resp.status().is_success() {
             let status = resp.status().as_u16();
             let body = resp.text().await.unwrap_or_default();
+            let raw_msg = if let Ok(json_val) = serde_json::from_str::<serde_json::Value>(&body) {
+                json_val.get("error").and_then(|e| e.as_str()).unwrap_or(&body).to_string()
+            } else {
+                body
+            };
+
+            let clean_msg = if raw_msg.contains("chtimes")
+                && (raw_msg.contains("operation not permitted") || raw_msg.contains("permission denied"))
+            {
+                format!(
+                    "Permissions insuffisantes sur le stockage Ollama (chtimes : operation not permitted). Le service Ollama doit être propriétaire des blobs. Exécutez : sudo chown -R ollama:ollama <dossier_modèles> ({})",
+                    raw_msg
+                )
+            } else {
+                raw_msg
+            };
+
             return Err(ApiError::HttpStatus {
                 status,
-                message: body,
+                message: clean_msg,
             });
         }
 
@@ -534,7 +551,17 @@ impl OllamaClient {
                     if let Ok(progress) = serde_json::from_str::<CreateProgress>(trimmed) {
                         if let Some(ref err) = progress.error {
                             if !err.is_empty() {
-                                return Err(ApiError::Custom(err.clone()));
+                                let err_clean = if err.contains("chtimes")
+                                    && (err.contains("operation not permitted") || err.contains("permission denied"))
+                                {
+                                    format!(
+                                        "Permissions insuffisantes sur le stockage Ollama (chtimes : operation not permitted). Le service Ollama doit être propriétaire des blobs. Exécutez : sudo chown -R ollama:ollama <dossier_modèles> ({})",
+                                        err
+                                    )
+                                } else {
+                                    err.clone()
+                                };
+                                return Err(ApiError::Custom(err_clean));
                             }
                         }
                         let keep_going = on_progress(progress);

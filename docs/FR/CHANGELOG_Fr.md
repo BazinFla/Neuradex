@@ -5,6 +5,19 @@ Toutes les modifications notables apportées au projet **NeuraDex** sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et ce projet respecte les principes du [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
+## [0.1.6] — Correctif de Persistance Modelfile & Permissions Ollama
+
+Ce correctif résout l'erreur HTTP 500 survenant lors de la sauvegarde des paramètres de modèle et de la compilation des Modelfiles dans Ollama.
+
+### Corrigé
+- **Gestion des permissions de stockage Ollama (`lifecycle.rs`)** :
+  - Attribution prioritaire de la propriété des répertoires de modèles au compte système `ollama:ollama` (dans `migrate_models`, `apply_systemd_override` et `fix_directory_permissions`).
+  - Conservation d'un accès intégral en lecture/écriture/exécution pour l'utilisateur de bureau grâce aux permissions de groupe `775` et aux listes de contrôle d'accès POSIX (`setfacl`).
+  - Résolution de l'erreur système `chtimes: operation not permitted` (`EPERM` du noyau Linux sur `utimensat`) rencontrée par le démon Ollama lors de la réutilisation des couches de poids pour la compilation des variantes et la persistance des paramètres (`num_ctx`, `num_gpu`, etc.).
+- **Diagnostic et retours d'erreurs d'API (`client.rs`)** :
+  - Détection contextuelle de l'erreur `chtimes / operation not permitted` d'Ollama dans `create_model_stream`.
+  - Affichage d'un message d'assistance clair indiquant la commande de correction des permissions de stockage au lieu d'un simple code générique HTTP 500.
+
 
 ## [0.1.5] — Système de Diagnostic & Préparation Première Publication
 
