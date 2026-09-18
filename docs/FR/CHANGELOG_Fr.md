@@ -5,6 +5,24 @@ Toutes les modifications notables apportées au projet **NeuraDex** sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et ce projet respecte les principes du [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
+## [0.1.7] — Omnibar Intelligente Unifiée & Empaquetage Arch Linux
+
+Cette version introduit une barre de recherche unifiée et ergonomique dans le Hub de modèles, ainsi que le support natif d'Arch Linux.
+
+### Ajouté
+- **Omnibar Intelligente Unifiée (`HubView`)** :
+  - Remplacement des panneaux de saisie superposés par une unique barre de recherche compacte fusionnant recherche catalogue et téléchargement.
+  - Détection automatique et dynamique des liens/dépôts Hugging Face (`hf.co/...`, `auteur/modèle`) avec affichage contextuel du bouton **"🤗 Explorer GGUFs"**.
+  - Téléchargement direct de modèles Ollama non référencés via le bouton **"⬇️ Télécharger"** ou la touche Entrée.
+  - Réinitialisation fluide de la vue après lancement d'un téléchargement.
+- **Installeur Web Universel Multi-Distributions (`scripts/get.sh`)** :
+  - Script d'installation one-liner (`curl -fsSL .../get.sh | bash`) compatible Debian, Ubuntu, Fedora et Arch Linux.
+  - Détection d'architecture (`x86_64`) et résolution automatique de la dernière version via l'API GitHub.
+- **Support & Empaquetage Arch Linux** :
+  - Génération automatique du paquet Pacman `.pkg.tar.zst` dans le workflow CI (`release.yml`).
+  - Ajout des recettes officielles `PKGBUILD` (avec fonction dynamique `pkgver()`) et `PKGBUILD.bin` (prête pour l'AUR).
+
+---
 ## [0.1.6] — Correctif de Persistance Modelfile & Permissions Ollama
 
 Ce correctif résout l'erreur HTTP 500 survenant lors de la sauvegarde des paramètres de modèle et de la compilation des Modelfiles dans Ollama.

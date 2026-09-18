@@ -56,6 +56,7 @@ Elle offre une interface de bureau pour piloter vos environnements **Ollama** lo
 </p>
 
 ### 📚 3. Hub de modèles & Téléchargeur GGUF Hugging Face
+- **Omnibar intelligente unifiée** : Barre de recherche compacte fusionnant le filtrage instantané du catalogue local, la détection automatique des liens Hugging Face (`hf.co/...`, `auteur/modèle`) pour explorer les quantifications GGUF, et le téléchargement direct de modèles Ollama non référencés.
 - **Catalogue de modèles** : Parcourez les modèles officiels et communautaires avec métadonnées, quantifications disponibles (`Q4_K_M`, `FP16`, `Q8_0`), fenêtres de contexte et badges de capacités (`think`, `vision`, `tools`, `code`, etc.).
 - **Sélecteur GGUF Hugging Face** : Collez une URL de dépôt Hugging Face ou un identifiant (`auteur/modèle` ou `hf.co/...`) pour explorer les quantifications GGUF disponibles avec vérification des tailles et de la compatibilité mémoire.
 - **Filtre matériel** : Filtrez le catalogue pour masquer automatiquement les modèles dépassant la capacité mémoire locale.
@@ -117,20 +118,37 @@ Elle offre une interface de bureau pour piloter vos environnements **Ollama** lo
 
 ## 🚀 Installation
 
-### Prérequis
-- **Ollama** : NeuraDex se connecte à une instance Ollama locale ou distante (`ollama serve` ou `ollama.service`). Rendez-vous sur [ollama.com](https://ollama.com) pour les instructions d'installation.
-- **Environnement Linux** : Pris en charge sur les distributions Linux exécutant GTK4 et Libadwaita (Wayland ou X11).
+### Installation rapide (One-liner)
+Pour Debian, Ubuntu, Fedora, Arch Linux et dérivés :
+```bash
+curl -fsSL https://raw.githubusercontent.com/BazinFla/Neuradex/main/scripts/get.sh | bash
+```
+*(Détecte automatiquement votre distribution, télécharge le paquet officiel `.deb`, `.rpm` ou `.pkg.tar.zst` depuis les Releases GitHub et l'installe).*
 
-### Fedora & dérivés (.rpm)
-Téléchargez le dernier `.rpm` depuis les [Releases](https://github.com/BazinFla/NeuraDex/releases) et installez-le :
+---
+
+### Installation manuelle de paquets
+
+#### Fedora & dérivés (.rpm)
+Téléchargez le dernier `.rpm` depuis les [Releases](https://github.com/BazinFla/Neuradex/releases) et installez-le :
 ```bash
 sudo dnf install ./neuradex-*.rpm
 ```
 
-### Debian / Ubuntu & dérivés (.deb)
-Téléchargez le dernier `.deb` depuis les [Releases](https://github.com/BazinFla/NeuraDex/releases) et installez-le :
+#### Debian / Ubuntu & dérivés (.deb)
+Téléchargez le dernier `.deb` depuis les [Releases](https://github.com/BazinFla/Neuradex/releases) et installez-le :
 ```bash
 sudo apt install ./neuradex_*_amd64.deb
+```
+
+#### Arch Linux & dérivés (.pkg.tar.zst)
+Téléchargez le dernier `.pkg.tar.zst` depuis les [Releases](https://github.com/BazinFla/Neuradex/releases) et installez-le :
+```bash
+sudo pacman -U ./neuradex-*-x86_64.pkg.tar.zst
+```
+Ou compilez localement avec le `PKGBUILD` inclus :
+```bash
+makepkg -si
 ```
 
 <details>

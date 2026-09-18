@@ -18,8 +18,7 @@ type CatalogCardEntry = (String, String, Rc<HubModelCard>);
 pub struct HubView {
     container: ScrolledWindow,
     search_entry: SearchEntry,
-    custom_pull_entry: gtk4::Entry,
-    btn_custom_pull: Button,
+    btn_pull_action: Button,
     category_box: FlowBox,
     catalog_bar: Box,
     sort_dropdown: DropDown,
@@ -62,37 +61,7 @@ impl HubView {
         let root_box = Box::new(Orientation::Vertical, 16);
 
         // ========================================================
-        // SECTION 1: Hugging Face & Official Download
-        // ========================================================
-        let custom_pull_group = adw::PreferencesGroup::builder()
-            .title(t!("hub.custom_pull_title"))
-            .description(t!("hub.custom_pull_desc"))
-            .build();
-
-        let custom_pull_hbox = Box::new(Orientation::Horizontal, 8);
-        custom_pull_hbox.set_margin_top(4);
-        custom_pull_hbox.set_margin_bottom(4);
-
-        let custom_pull_entry = gtk4::Entry::builder()
-            .placeholder_text(t!("hub.custom_pull_placeholder"))
-            .hexpand(true)
-            .build();
-
-        let btn_custom_pull = Button::builder()
-            .label(t!("hub.custom_pull_btn"))
-            .css_classes(["suggested-action"])
-            .tooltip_text(t!("hub.custom_pull_tooltip"))
-            .valign(Align::Center)
-            .build();
-
-        custom_pull_hbox.append(&custom_pull_entry);
-        custom_pull_hbox.append(&btn_custom_pull);
-        custom_pull_group.add(&custom_pull_hbox);
-
-        root_box.append(&custom_pull_group);
-
-        // ========================================================
-        // SECTION 2: Model Catalog & Filters
+        // SECTION: Model Catalog, Smart Omnibar & Filters
         // ========================================================
         let catalog_group = adw::PreferencesGroup::builder()
             .title(t!("hub.catalog_title"))
@@ -107,13 +76,28 @@ impl HubView {
             .build();
         catalog_group.set_header_suffix(Some(&btn_sync_online));
 
+        // Unified Omnibar: SearchEntry + Contextual Action Button (Hugging Face / Ollama Pull)
+        let search_hbox = Box::new(Orientation::Horizontal, 8);
+        search_hbox.set_margin_bottom(8);
+
         let search_entry = SearchEntry::builder()
             .placeholder_text(t!("hub.search_placeholder"))
-            .margin_bottom(8)
+            .hexpand(true)
             .can_focus(true)
             .focus_on_click(true)
             .build();
-        catalog_group.add(&search_entry);
+
+        let btn_pull_action = Button::builder()
+            .label(t!("hub.pull_btn"))
+            .css_classes(["suggested-action", "pill"])
+            .tooltip_text(t!("hub.pull_tooltip"))
+            .valign(Align::Center)
+            .visible(false)
+            .build();
+
+        search_hbox.append(&search_entry);
+        search_hbox.append(&btn_pull_action);
+        catalog_group.add(&search_hbox);
 
         // Category Filter Buttons (Pills)
         let category_box = FlowBox::builder()
@@ -241,8 +225,7 @@ impl HubView {
         let view = Self {
             container,
             search_entry,
-            custom_pull_entry,
-            btn_custom_pull,
+            btn_pull_action,
             category_box,
             catalog_bar,
             sort_dropdown,
@@ -294,7 +277,25 @@ impl HubView {
         };
 
         let filter_clone1 = apply_filters.clone();
-        self.search_entry.connect_search_changed(move |_| {
+        let btn_pull = self.btn_pull_action.clone();
+        self.search_entry.connect_search_changed(move |entry| {
+            let text = entry.text().to_string();
+            let trimmed = text.trim();
+
+            if trimmed.is_empty() {
+                btn_pull.set_visible(false);
+            } else if let Some((_repo_id, _tag)) = crate::api::hub_remote::parse_hf_identifier(trimmed) {
+                btn_pull.set_visible(true);
+                btn_pull.set_label(&t!("hub.inspect_hf_btn"));
+                btn_pull.set_tooltip_text(Some(&t!("hub.inspect_hf_tooltip")));
+                btn_pull.set_css_classes(&["suggested-action", "pill"]);
+            } else {
+                btn_pull.set_visible(true);
+                btn_pull.set_label(&t!("hub.pull_btn"));
+                btn_pull.set_tooltip_text(Some(&t!("hub.pull_tooltip")));
+                btn_pull.set_css_classes(&["suggested-action", "pill"]);
+            }
+
             filter_clone1();
         });
 
@@ -540,28 +541,34 @@ impl HubView {
     }
 
     pub fn connect_custom_pull<F: Fn(String) + 'static>(&self, f: F) {
-        let entry = self.custom_pull_entry.clone();
+        let entry = self.search_entry.clone();
         let f_rc = Rc::new(f);
 
         let f_click = f_rc.clone();
         let entry_click = entry.clone();
-        self.btn_custom_pull.connect_clicked(move |_| {
+        self.btn_pull_action.connect_clicked(move |_| {
             let text = entry_click.text().to_string();
-            if !text.trim().is_empty() {
-                f_click(text.trim().to_string());
+            let trimmed = text.trim().to_string();
+            if !trimmed.is_empty() {
+                f_click(trimmed);
                 entry_click.set_text("");
             }
         });
 
         let f_enter = f_rc;
         let entry_enter = entry;
-        self.custom_pull_entry.connect_activate(move |_| {
+        self.search_entry.connect_activate(move |_| {
             let text = entry_enter.text().to_string();
-            if !text.trim().is_empty() {
-                f_enter(text.trim().to_string());
+            let trimmed = text.trim().to_string();
+            if !trimmed.is_empty() {
+                f_enter(trimmed);
                 entry_enter.set_text("");
             }
         });
+    }
+
+    pub fn focus_search(&self) {
+        self.search_entry.grab_focus();
     }
 
     pub fn installed_names(&self) -> HashSet<String> {

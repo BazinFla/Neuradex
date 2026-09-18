@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.1.7] — Unified Smart Omnibar & Arch Linux Packaging
+
+This release introduces a streamlined, space-saving smart Omnibar in the Model Hub and native packaging for Arch Linux.
+
+### Added
+- **Unified Smart Omnibar (`HubView`)**:
+  - Replaced redundant top input panels with a single, compact search bar combining catalog filtering and model downloading.
+  - Automatic real-time identifier detection: typing or pasting Hugging Face URLs/repos (`hf.co/...`, `author/model`) dynamically reveals a contextual **"🤗 Explore GGUFs"** action.
+  - Direct Ollama model download: typing custom or unlisted model identifiers reveals a **"⬇️ Download"** action.
+  - Instant activation: pressing Enter or clicking the action button triggers GGUF inspection or model download, then resets the search view.
+- **Universal Multi-Distro Web Installer (`scripts/get.sh`)**:
+  - One-line installation script (`curl -fsSL .../get.sh | bash`) supporting Debian, Ubuntu, Fedora, and Arch Linux.
+  - Automatic architecture detection (`x86_64`) and latest release package resolution via GitHub API.
+- **Native Arch Linux Packaging**:
+  - Integrated `.pkg.tar.zst` Pacman package generation in release CI workflow (`release.yml`).
+  - Added official `PKGBUILD` and AUR-ready `PKGBUILD.bin` recipes.
+
+---
+
 ## [0.1.6] — Ollama Modelfile Compilation & Storage Permissions Fix
 
 This patch release fixes the HTTP 500 error encountered when saving model settings and compiling Modelfiles in Ollama.

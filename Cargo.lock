@@ -1498,7 +1498,7 @@ dependencies = [
 
 [[package]]
 name = "neuradex"
-version = "0.1.5"
+version = "0.1.7"
 dependencies = [
  "async-channel",
  "chrono",

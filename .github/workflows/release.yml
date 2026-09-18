@@ -128,6 +128,47 @@ jobs:
           print(notes[:500] + ("\n..." if len(notes) > 500 else ""))
           '
 
+      - name: Sync PKGBUILD versions
+        run: |
+          VERSION="${{ steps.changelog.outputs.version }}"
+          echo "Updating PKGBUILDs to version: ${VERSION}"
+          sed -i "s/^pkgver=.*/pkgver=${VERSION}/" PKGBUILD packaging/arch/PKGBUILD.bin
+
+      - name: Generate Arch Linux package (.pkg.tar.zst)
+        run: |
+          VERSION="${{ steps.changelog.outputs.version }}"
+          PKG_DIR="target/arch/pkg"
+          mkdir -p "${PKG_DIR}"
+
+          # Prepare PKGINFO metadata
+          cat <<EOF > "${PKG_DIR}/.PKGINFO"
+          pkgname = neuradex
+          pkgbase = neuradex
+          pkgver = ${VERSION}-1
+          pkgdesc = Native Linux desktop control center, model hub and inference studio for local AI
+          url = https://github.com/BazinFla/NeuraDex
+          builddate = $(date +%s)
+          packager = BazinFla <bazinfla@users.noreply.github.com>
+          size = $(stat -c %s target/release/neuradex)
+          arch = x86_64
+          license = GPL-3.0-or-later
+          depend = gtk4
+          depend = libadwaita
+          depend = openssl
+          provides = neuradex
+          conflict = neuradex-bin
+          EOF
+
+          # Install files into Arch layout
+          install -Dm755 target/release/neuradex "${PKG_DIR}/usr/bin/neuradex"
+          install -Dm644 data/io.github.bazinfla.NeuraDex.desktop "${PKG_DIR}/usr/share/applications/io.github.bazinfla.NeuraDex.desktop"
+          install -Dm644 data/icons/io.github.bazinfla.NeuraDex.svg "${PKG_DIR}/usr/share/icons/hicolor/scalable/apps/io.github.bazinfla.NeuraDex.svg"
+
+          # Create compressed pacman archive (.pkg.tar.zst)
+          mkdir -p target/arch/out
+          (cd "${PKG_DIR}" && tar --zstd -cf "../out/neuradex-${VERSION}-1-x86_64.pkg.tar.zst" .PKGINFO usr)
+          echo "Arch Linux package generated: target/arch/out/neuradex-${VERSION}-1-x86_64.pkg.tar.zst"
+
       - name: Create GitHub Release and Upload Packages
         uses: softprops/action-gh-release@v2
         with:
@@ -137,5 +178,8 @@ jobs:
           files: |
             target/generate-rpm/*.rpm
             target/debian/*.deb
+            target/arch/out/*.pkg.tar.zst
+            PKGBUILD
+            packaging/arch/PKGBUILD.bin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -60,6 +60,7 @@ It provides a desktop interface to manage local **Ollama** runtimes: monitor GPU
 </p>
 
 ### 📚 3. Model Hub & Hugging Face GGUF Downloader
+- **Unified Smart Omnibar**: Compact search bar combining real-time catalog filtering, automatic Hugging Face link detection (`hf.co/...`, `author/model`) to explore GGUF quantizations, and direct Ollama model pulling.
 - **Model Catalog**: Browse official and community models with metadata, available quantizations (`Q4_K_M`, `FP16`, `Q8_0`), context limits, and capability tags (`think`, `vision`, `tools`, `code`, etc.).
 - **Hugging Face GGUF Picker**: Paste a Hugging Face repository URL or identifier (`author/model` or `hf.co/...`) to browse available GGUF quantizations with file sizes and memory compatibility checks.
 - **Hardware Filter**: Filter the catalog to hide models exceeding local memory capacity.
@@ -125,20 +126,37 @@ It provides a desktop interface to manage local **Ollama** runtimes: monitor GPU
 
 ## 🚀 Installation
 
-### Prerequisites
-- **Ollama**: NeuraDex connects to a local or remote Ollama instance (`ollama serve` or `ollama.service`). See [ollama.com](https://ollama.com) for setup instructions.
-- **Linux Environment**: Supported on Linux distributions running GTK4 and Libadwaita (Wayland or X11).
+### Quick Install (One-liner)
+For Debian, Ubuntu, Fedora, Arch Linux, and derivatives:
+```bash
+curl -fsSL https://raw.githubusercontent.com/BazinFla/Neuradex/main/scripts/get.sh | bash
+```
+*(Automatically detects your distribution, downloads the latest official `.deb`, `.rpm`, or `.pkg.tar.zst` package from GitHub Releases, and installs it).*
 
-### Fedora & derivatives (.rpm)
-Download the latest `.rpm` from [Releases](https://github.com/BazinFla/NeuraDex/releases) and install:
+---
+
+### Manual Package Installation
+
+#### Fedora & derivatives (.rpm)
+Download the latest `.rpm` from [Releases](https://github.com/BazinFla/Neuradex/releases) and install:
 ```bash
 sudo dnf install ./neuradex-*.rpm
 ```
 
-### Debian / Ubuntu & derivatives (.deb)
-Download the latest `.deb` from [Releases](https://github.com/BazinFla/NeuraDex/releases) and install:
+#### Debian / Ubuntu & derivatives (.deb)
+Download the latest `.deb` from [Releases](https://github.com/BazinFla/Neuradex/releases) and install:
 ```bash
 sudo apt install ./neuradex_*_amd64.deb
+```
+
+#### Arch Linux & derivatives (.pkg.tar.zst)
+Download the latest `.pkg.tar.zst` from [Releases](https://github.com/BazinFla/Neuradex/releases) and install:
+```bash
+sudo pacman -U ./neuradex-*-x86_64.pkg.tar.zst
+```
+Or build locally with the included `PKGBUILD`:
+```bash
+makepkg -si
 ```
 
 <details>
