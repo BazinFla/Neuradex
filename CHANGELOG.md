@@ -18,6 +18,11 @@ This release enhances the Model Hub Omnibar with simultaneous dual-source resolu
   - Graceful fallback and user notification when a model is not found on either platform.
 - **Hub Omnibar "Search" Action**:
   - Replaced the action button label from "Download" to "Search" (`🔍 Search` / `🔍 Rechercher`) with updated contextual tooltips to better reflect the dual-source discovery workflow.
+- **Loaded Model Hyperparameters & Information Inspector (`InstancesView`, `RunningModelInfoDialog`)**:
+  - Added an intuitive **"ℹ️"** action button on active memory cards to inspect loaded hyperparameters and runtime allocations.
+  - Displays real-time memory session data: VRAM vs system RAM allocation, acceleration ratio (Full GPU vs Hybrid offload), active context length in memory, and keep-alive expiration countdown.
+  - Automatically queries the Ollama daemon for active generation hyperparameters (temperature, top_p, top_k, repeat_penalty, presence_penalty, etc.) and architectural specifications (native context limits, layers, attention heads, GQA, embedding dimension, vocab size).
+  - Quick-copy button to export complete model parameters and runtime statistics to clipboard.
 
 ### Changed
 - **Hub Category Modernization**:

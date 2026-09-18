@@ -5,6 +5,7 @@ pub mod hub_model_card;
 pub mod key_profile_row;
 pub mod model_card;
 pub mod model_settings_dialog;
+pub mod running_model_info_dialog;
 pub mod vram_gauge;
 
 pub use chat_settings_popover::ChatSettingsPopover;
@@ -14,6 +15,7 @@ pub use hub_model_card::HubModelCard;
 pub use key_profile_row::KeyProfileRow;
 pub use model_card::ModelCard;
 pub use model_settings_dialog::ModelSettingsDialog;
+pub use running_model_info_dialog::RunningModelInfoDialog;
 pub use vram_gauge::VramGauge;
 
 

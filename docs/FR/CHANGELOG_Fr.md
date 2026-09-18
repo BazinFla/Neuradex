@@ -18,6 +18,11 @@ Cette version enrichit l'Omnibar du Hub de modèles avec une détection concurre
   - Notification par toast informative avec repli propre si le modèle n'est trouvé sur aucune des deux plateformes.
 - **Bouton d'action "Rechercher" dans l'Omnibar** :
   - Remplacement du libellé "Télécharger" par "Rechercher" (`🔍 Rechercher` / `🔍 Search`) avec infobulle explicative reflétant la recherche multi-sources.
+- **Inspecteur d'Hyperparamètres et d'Infos des Modèles Chargés (`InstancesView`, `RunningModelInfoDialog`)** :
+  - Ajout d'un bouton contextuel **"ℹ️"** sur chaque carte de modèle en mémoire pour inspecter les hyperparamètres et l'état d'allocation réel.
+  - Affichage détaillé de la session mémoire : VRAM allouée vs RAM système, ratio d'accélération (Full GPU ou Hybride), longueur de contexte active en mémoire et compte à rebours keep-alive.
+  - Interrogation asynchrone du démon Ollama pour afficher les hyperparamètres d'inférence (température, top_p, top_k, pénalités de répétition/présence) et les spécifications d'architecture (contexte natif, couches, têtes d'attention GQA, dimensions d'embedding, vocabulaire).
+  - Bouton de copie rapide pour exporter l'ensemble des paramètres du modèle dans le presse-papiers.
 
 ### Modifié
 - **Modernisation des Catégories du Hub** :

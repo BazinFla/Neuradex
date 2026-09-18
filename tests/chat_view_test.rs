@@ -153,6 +153,7 @@ fn test_model_sorting_preloaded_first() {
             digest: Some("def".to_string()),
             details: None,
             expires_at: None,
+            context_length: None,
         },
     ];
 
@@ -319,6 +320,7 @@ fn test_check_model_running_detection() {
             details: None,
             expires_at: Some("2026-08-26T12:00:00Z".to_string()),
             size_vram: 2_000_000_000,
+            context_length: None,
         },
         neuradex::api::types::ModelPs {
             name: "qwen2.5-coder:7b".to_string(),
@@ -328,6 +330,7 @@ fn test_check_model_running_detection() {
             details: None,
             expires_at: Some("2026-08-26T12:00:00Z".to_string()),
             size_vram: 4_700_000_000,
+            context_length: None,
         },
     ];
 

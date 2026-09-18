@@ -2,7 +2,7 @@ use crate::api::types::{ModelNameUtils, ModelPs, ModelTag};
 use crate::core::hardware::estimator::{format_bytes, format_gib};
 use crate::core::hardware::HardwareSnapshot;
 use crate::t;
-use crate::ui::components::{ModelCard, VramGauge};
+use crate::ui::components::{ModelCard, RunningModelInfoDialog, VramGauge};
 use adw::prelude::*;
 use gtk4::{
     Align, Box, Button, Label, LevelBar, ListBox, ListBoxRow, Orientation,
@@ -501,6 +501,20 @@ impl InstancesView {
                     .valign(Align::Center)
                     .build();
 
+                // Info button ("i")
+                let btn_info = Button::builder()
+                    .icon_name("dialog-information-symbolic")
+                    .css_classes(["flat", "circular", "running-info-btn"])
+                    .tooltip_text(t!("instances.running_info_tooltip"))
+                    .valign(Align::Center)
+                    .build();
+
+                let ps_for_info = ps.clone();
+                let parent_widget = self.container.clone();
+                btn_info.connect_clicked(move |_| {
+                    RunningModelInfoDialog::show(Some(&parent_widget), ps_for_info.clone());
+                });
+
                 // Unload button (VRAM flush)
                 let btn_flush = Button::builder()
                     .label(t!("instances.unload_btn"))
@@ -520,6 +534,7 @@ impl InstancesView {
                 top_row.append(&status_icon);
                 top_row.append(&name_label);
                 top_row.append(&alloc_chip);
+                top_row.append(&btn_info);
                 top_row.append(&btn_flush);
                 card.append(&top_row);
 

@@ -229,6 +229,21 @@ pub fn load_custom_styles() {
             color: alpha(@window_fg_color, 0.75);
         }
 
+        .running-info-btn {
+            min-width: 28px;
+            min-height: 28px;
+            padding: 4px;
+            border-radius: 9999px;
+            opacity: 0.82;
+            transition: all 150ms ease;
+        }
+
+        .running-info-btn:hover {
+            opacity: 1.0;
+            background: alpha(@accent_color, 0.15);
+            color: @accent_color;
+        }
+
         .running-vram-bar progress,
         .running-vram-bar trough {
             min-height: 5px;

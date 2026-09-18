@@ -55,6 +55,8 @@ pub struct ModelPs {
     pub digest: Option<String>,
     pub details: Option<ModelDetails>,
     pub expires_at: Option<String>,
+    #[serde(default)]
+    pub context_length: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -591,6 +593,7 @@ mod tests {
                 digest: None,
                 details: None,
                 expires_at: None,
+                context_length: None,
             }
         ];
         let (is_run, vram) = ModelNameUtils::check_model_running("llama3.2", 2_000_000_000, &running);
