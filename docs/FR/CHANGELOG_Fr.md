@@ -5,6 +5,28 @@ Toutes les modifications notables apportées au projet **NeuraDex** sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et ce projet respecte les principes du [Semantic Versioning](https://semver.org/lang/fr/).
 
 ---
+
+## [0.1.8] — Résolution Double Source (Ollama & Hugging Face) & Modernisation des Catégories du Hub
+
+Cette version enrichit l'Omnibar du Hub de modèles avec une détection concurrente double source (Ollama et Hugging Face), introduit une fenêtre unifiée de sélection multi-sources et modernise les catégories de capacités.
+
+### Ajouté
+- **Résolution Concurrente & Sélecteur Multi-Sources (`window.rs`, `HfModelPickerDialog`)** :
+  - Vérification simultanée et asynchrone via `tokio::join!` sur le registre Ollama et l'API Hugging Face lors de la saisie d'un identifiant `auteur/modèle`.
+  - Si le modèle est disponible sur les deux plateformes, la fenêtre contextuelle affiche la section **🦙 Bibliothèque Ollama** tout en haut, au-dessus de la liste des quantifications Hugging Face, permettant à l'utilisateur de choisir librement sa source en un clic.
+  - Bouton d'action direct "Ouvrir sur Ollama" renvoyant vers la page officielle sur `ollama.com`.
+  - Notification par toast informative avec repli propre si le modèle n'est trouvé sur aucune des deux plateformes.
+- **Bouton d'action "Rechercher" dans l'Omnibar** :
+  - Remplacement du libellé "Télécharger" par "Rechercher" (`🔍 Rechercher` / `🔍 Search`) avec infobulle explicative reflétant la recherche multi-sources.
+
+### Modifié
+- **Modernisation des Catégories du Hub** :
+  - Renommage de la catégorie `Spécialisé` en `Outils` ("Tools" / "Outils") dans les filtres, cartes et fichiers de localisation (`fr.json`, `en.json`).
+  - Retrait du filtre obsolète `Général & Polyvalent` de la barre de filtres du Hub pour une interface plus claire et épurée.
+  - Mise à jour du scraper et de la base de modèles (`ai-models-list`) pour catégoriser fidèlement les modèles avec appel d'outils (*tool calling*).
+
+---
+
 ## [0.1.7] — Omnibar Intelligente Unifiée & Empaquetage Arch Linux
 
 Cette version introduit une barre de recherche unifiée et ergonomique dans le Hub de modèles, ainsi que le support natif d'Arch Linux.

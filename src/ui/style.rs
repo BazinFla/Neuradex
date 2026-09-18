@@ -609,6 +609,27 @@ pub fn load_custom_styles() {
         /* ==========================================================
            Action Buttons Contrast Styling (Light & Dark Theme Safety)
            ========================================================== */
+        /* Lighter Blue Action Button (Secondary / Offload GGUF variants) */
+        button.suggested-action.light,
+        button.suggested-action-light {
+            background-color: #62a0ea;
+            color: #ffffff;
+            font-weight: 600;
+            transition: all 160ms ease-in-out;
+        }
+
+        button.suggested-action.light:hover,
+        button.suggested-action-light:hover {
+            background-color: #78aeed;
+            color: #ffffff;
+        }
+
+        button.suggested-action.light:active,
+        button.suggested-action-light:active {
+            background-color: #3584e4;
+            color: #ffffff;
+        }
+
         button.suggested-action.flat {
             color: @accent_color;
             background-color: alpha(@accent_color, 0.12);
@@ -679,6 +700,37 @@ pub fn load_custom_styles() {
             font-size: 12.5px;
             font-weight: 800;
             line-height: 1.1;
+        }
+
+        /* ==========================================================
+           Top Toast / In-App Notification Styling & Copy Action
+           ========================================================== */
+        toast {
+            border-radius: 12px;
+            box-shadow: 0 4px 18px alpha(#000, 0.45);
+            font-size: 13px;
+        }
+
+        button.toast-copy-btn {
+            min-width: 26px;
+            min-height: 26px;
+            padding: 4px;
+            border-radius: 13px;
+            opacity: 0.70;
+            color: @window_fg_color;
+            transition: all 150ms ease;
+            margin-start: 4px;
+        }
+
+        button.toast-copy-btn:hover {
+            opacity: 1.0;
+            background-color: alpha(@accent_color, 0.18);
+            color: @accent_color;
+        }
+
+        button.toast-copy-btn:active {
+            background-color: alpha(@accent_color, 0.32);
+            color: @accent_color;
         }
     "#;
 

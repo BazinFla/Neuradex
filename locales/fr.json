@@ -113,8 +113,8 @@
     "sync_btn": "🌐 Synchroniser",
     "sync_tooltip": "Télécharger l'intégralité des 230+ modèles officiels depuis ollama.com",
     "search_placeholder": "Rechercher un modèle ou coller un lien Hugging Face (ex: deepseek, llama3, user/repo, hf.co/...)",
-    "pull_btn": "⬇️ Télécharger",
-    "pull_tooltip": "Télécharger ce modèle directement via Ollama",
+    "pull_btn": "🔍 Rechercher",
+    "pull_tooltip": "Rechercher et télécharger sur Ollama ou Hugging Face",
     "inspect_hf_btn": "🤗 Explorer GGUFs",
     "inspect_hf_tooltip": "Explorer et télécharger les quantisations GGUF depuis Hugging Face",
     "sort_label": "Trier par :",
@@ -133,13 +133,12 @@
     "categories": {
       "all": "🌟 Tous les modèles",
       "reasoning": "🧠 Raisonnement",
-      "vision": "👁️ Vision & Multimodal",
-      "code": "💻 Code & Développement",
+      "vision": "👁️ Vision",
+      "code": "💻 Code",
       "lightweight": "⚡ Légers (<4B)",
-      "general": "🏢 Généralistes & Polyvalents",
-      "rag": "🧬 RAG & Embeddings",
+      "rag": "🧬 Embeddings",
       "cybersecurity": "🔒 Cybersécurité",
-      "specialized": "🔧 Spécialisés",
+      "tools": "🔧 Outils",
       "cloud": "☁️ Modèles Cloud"
     },
     "sort": {
@@ -168,6 +167,13 @@
     "installed": "✅ Installé",
     "shards": "🧩 {count} fragments combinés",
     "shards_combined": "🧩 {count} fragments combinés",
+    "ollama_section_title": "🦙 Bibliothèque Ollama",
+    "ollama_section_desc": "Téléchargement direct depuis la bibliothèque officielle ou communautaire Ollama",
+    "ollama_pull_btn": "⬇️ Télécharger depuis Ollama",
+    "open_ollama": "🌐 Ouvrir sur Ollama",
+    "open_ollama_tooltip": "Voir la page du modèle sur ollama.com",
+    "hf_variants_title": "🤗 Quantifications GGUF Hugging Face",
+    "hf_variants_desc": "Sélectionnez la quantification adaptée à votre mémoire VRAM et lancez le téléchargement.",
     "already_installed": "✅ Déjà installé",
     "download": "⬇️ Télécharger"
   },
@@ -541,12 +547,12 @@
     "stream_desc": "Logs d'inférence en direct, timing des requêtes et diagnostics système"
   },
   "capabilities": {
-    "reasoning": "Raisonnement & Réflexion",
-    "vision": "Vision & Multimodal",
-    "code": "Code & Développement",
-    "embedding": "Embeddings & RAG",
-    "tools": "Outils & Appel de fonctions",
-    "audio": "Audio & Vocal"
+    "reasoning": "Raisonnement",
+    "vision": "Vision",
+    "code": "Code",
+    "embedding": "Embeddings",
+    "tools": "Outils",
+    "audio": "Audio"
   },
   "fitness": {
     "full_gpu": "🟢 100% VRAM GPU",
@@ -594,7 +600,9 @@
     "models_unloaded_count": "✅ {count} modèle(s) déchargé(s) de la mémoire !",
     "no_model_was_loaded": "ℹ️ Aucun modèle n'était chargé.",
     "inspecting_hf": "🔍 Inspection du dépôt Hugging Face '{name}'...",
+    "resolving_model": "🔍 Vérification du modèle '{name}' (Ollama & Hugging Face)...",
     "hf_fallback_standard": "ℹ️ {err} - Téléchargement standard...",
+    "model_not_found_both": "⚠️ Modèle '{name}' introuvable sur Ollama ou Hugging Face. Tentative de téléchargement standard...",
     "catalog_refreshing": "🔄 Rafraîchissement du catalogue en cours...",
     "catalog_refreshed": "✅ Catalogue rafraîchi ({count} modèles) !",
     "catalog_refresh_failed": "❌ Échec du rafraîchissement : {err}",
@@ -620,7 +628,11 @@
     "variant_created": "✨ Variante '{name}' créée avec succès dans Ollama !",
     "compile_failed": "❌ Échec de compilation : {err}",
     "model_unloaded": "🧹 Modèle '{name}' déchargé de la VRAM.",
-    "all_unloaded": "🧹 Tous les modèles actifs ont été déchargés de la mémoire."
+    "all_unloaded": "🧹 Tous les modèles actifs ont été déchargés de la mémoire.",
+    "copy_btn": "📋 Copier",
+    "copied_btn": "✅ Copié !",
+    "copy_tooltip": "Copier le texte de la notification",
+    "copied_tooltip": "Copié dans le presse-papier !"
   },
   "vault": {
     "ollama_cloud_empty": "Clé Ollama Cloud vide",

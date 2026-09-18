@@ -116,10 +116,9 @@ impl HubView {
             (t!("hub.categories.vision"), Some("vision")),
             (t!("hub.categories.code"), Some("code")),
             (t!("hub.categories.lightweight"), Some("lightweight")),
-            (t!("hub.categories.general"), Some("general")),
             (t!("hub.categories.rag"), Some("rag")),
             (t!("hub.categories.cybersecurity"), Some("cybersecurity")),
-            (t!("hub.categories.specialized"), Some("specialized")),
+            (t!("hub.categories.tools"), Some("tools")),
             (t!("hub.categories.cloud"), Some("cloud")),
         ];
 
@@ -284,16 +283,21 @@ impl HubView {
 
             if trimmed.is_empty() {
                 btn_pull.set_visible(false);
-            } else if let Some((_repo_id, _tag)) = crate::api::hub_remote::parse_hf_identifier(trimmed) {
-                btn_pull.set_visible(true);
-                btn_pull.set_label(&t!("hub.inspect_hf_btn"));
-                btn_pull.set_tooltip_text(Some(&t!("hub.inspect_hf_tooltip")));
-                btn_pull.set_css_classes(&["suggested-action", "pill"]);
             } else {
-                btn_pull.set_visible(true);
-                btn_pull.set_label(&t!("hub.pull_btn"));
-                btn_pull.set_tooltip_text(Some(&t!("hub.pull_tooltip")));
-                btn_pull.set_css_classes(&["suggested-action", "pill"]);
+                match crate::api::hub_remote::parse_model_input(trimmed) {
+                    crate::api::hub_remote::ModelInputKind::ExplicitHf(_, _) => {
+                        btn_pull.set_visible(true);
+                        btn_pull.set_label(&t!("hub.inspect_hf_btn"));
+                        btn_pull.set_tooltip_text(Some(&t!("hub.inspect_hf_tooltip")));
+                        btn_pull.set_css_classes(&["suggested-action", "pill"]);
+                    }
+                    _ => {
+                        btn_pull.set_visible(true);
+                        btn_pull.set_label(&t!("hub.pull_btn"));
+                        btn_pull.set_tooltip_text(Some(&t!("hub.pull_tooltip")));
+                        btn_pull.set_css_classes(&["suggested-action", "pill"]);
+                    }
+                }
             }
 
             filter_clone1();
@@ -312,10 +316,9 @@ impl HubView {
             (t!("hub.categories.vision"), Some("vision")),
             (t!("hub.categories.code"), Some("code")),
             (t!("hub.categories.lightweight"), Some("lightweight")),
-            (t!("hub.categories.general"), Some("general")),
             (t!("hub.categories.rag"), Some("rag")),
             (t!("hub.categories.cybersecurity"), Some("cybersecurity")),
-            (t!("hub.categories.specialized"), Some("specialized")),
+            (t!("hub.categories.tools"), Some("tools")),
             (t!("hub.categories.cloud"), Some("cloud")),
         ];
 

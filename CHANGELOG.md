@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.1.8] — Dual-Source Model Resolution (Ollama & Hugging Face) & Hub Category Modernization
+
+This release enhances the Model Hub Omnibar with simultaneous dual-source resolution across Ollama and Hugging Face, introduces a unified multi-source picker popup, and streamlines model capability categories.
+
+### Added
+- **Dual-Source Resolution & Unified Picker (`window.rs`, `HfModelPickerDialog`)**:
+  - Concurrent lookup via `tokio::join!` querying both Ollama's registry and Hugging Face API when resolving user input (`author/model`).
+  - When a model exists on both Ollama and Hugging Face, the selection popup displays the **🦙 Ollama Library** option prominently at the top, directly above the Hugging Face GGUF quantizations list, giving users the freedom to choose their preferred download source in one click.
+  - Dedicated "Open on Ollama" action button linking directly to the model's ollama.com page.
+  - Graceful fallback and user notification when a model is not found on either platform.
+- **Hub Omnibar "Search" Action**:
+  - Replaced the action button label from "Download" to "Search" (`🔍 Search` / `🔍 Rechercher`) with updated contextual tooltips to better reflect the dual-source discovery workflow.
+
+### Changed
+- **Hub Category Modernization**:
+  - Renamed `Specialized` category to `Tools` across UI filters, card tags, and localization files (`en.json`, `fr.json`).
+  - Removed obsolete `General & Versatile` filter pill from Hub category filters for a cleaner, more focused browsing experience.
+  - Updated AI models scraper and dataset (`ai-models-list`) to normalize tool-calling capabilities.
+
+---
+
 ## [0.1.7] — Unified Smart Omnibar & Arch Linux Packaging
 
 This release introduces a streamlined, space-saving smart Omnibar in the Model Hub and native packaging for Arch Linux.

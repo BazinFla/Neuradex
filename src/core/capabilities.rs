@@ -85,7 +85,7 @@ pub fn detect_capabilities(
         caps.push(ModelCapability::Reasoning);
     }
 
-    // 2. Vision & Multimodal (LLaVA, BakLLaVA, Moondream, MiniCPM-V, Vision, clip, mllama, etc.)
+    // 2. Vision (LLaVA, BakLLaVA, Moondream, MiniCPM-V, Vision, clip, mllama, etc.)
     if combined_text.contains("vision")
         || combined_text.contains("vl")
         || combined_text.contains("llava")

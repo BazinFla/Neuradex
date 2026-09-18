@@ -123,6 +123,16 @@ impl OllamaWebClient {
         Ok(models)
     }
 
+    /// Checks if a model exists in the Ollama registry (e.g. "tobestyledintro/Ternary-Bonsai-2-27B")
+    pub async fn check_ollama_model_exists(&self, repo_id: &str) -> bool {
+        let clean = repo_id.trim().trim_start_matches('/').trim_end_matches('/');
+        let url = format!("https://ollama.com/{}", clean);
+        match self.http_client.get(&url).send().await {
+            Ok(resp) => resp.status().is_success(),
+            Err(_) => false,
+        }
+    }
+
     /// Retrieves all GGUF files and quantizations from a Hugging Face repository
     pub async fn fetch_hf_repo_details(
         &self,
@@ -379,6 +389,79 @@ pub fn parse_hf_identifier(input: &str) -> Option<(String, Option<String>)> {
     None
 }
 
+/// Parses a string that might be an Ollama URL (e.g. "https://ollama.com/user/model" -> "user/model")
+pub fn parse_ollama_identifier(input: &str) -> Option<String> {
+    let trimmed = input.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+
+    let cleaned = if let Some(rest) = trimmed.strip_prefix("https://ollama.com/") {
+        rest
+    } else if let Some(rest) = trimmed.strip_prefix("http://ollama.com/") {
+        rest
+    } else if let Some(rest) = trimmed.strip_prefix("ollama.com/") {
+        rest
+    } else {
+        return None;
+    };
+
+    let cleaned = cleaned.trim_end_matches('/');
+    let cleaned = if let Some(idx) = cleaned.find("/tags") {
+        &cleaned[..idx]
+    } else {
+        cleaned
+    };
+
+    let cleaned = cleaned.trim_start_matches("library/");
+
+    if !cleaned.is_empty() {
+        Some(cleaned.to_string())
+    } else {
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ModelInputKind {
+    /// Explicit Ollama URL (e.g. https://ollama.com/user/model)
+    ExplicitOllama(String),
+    /// Explicit Hugging Face URL or hf.co prefix (e.g. hf.co/user/repo or https://huggingface.co/user/repo)
+    ExplicitHf(String, Option<String>),
+    /// Bare owner/model without domain (e.g. "tobestyledintro/Ternary-Bonsai-2-27B" or "OBLITERATUS/Qwen3.8-27B-OBLITERATED")
+    AmbiguousOwnerRepo(String, Option<String>),
+    /// Standard local or official model name (e.g. "llama3.2:3b", "mistral")
+    Standard(String),
+}
+
+pub fn parse_model_input(input: &str) -> ModelInputKind {
+    let trimmed = input.trim();
+
+    // 1. Check if it's an explicit Ollama URL
+    if let Some(ollama_id) = parse_ollama_identifier(trimmed) {
+        return ModelInputKind::ExplicitOllama(ollama_id);
+    }
+
+    // 2. Check if it's an explicit Hugging Face URL or prefix
+    if trimmed.starts_with("https://huggingface.co/")
+        || trimmed.starts_with("http://huggingface.co/")
+        || trimmed.starts_with("huggingface.co/")
+        || trimmed.starts_with("hf.co/")
+    {
+        if let Some((repo, tag)) = parse_hf_identifier(trimmed) {
+            return ModelInputKind::ExplicitHf(repo, tag);
+        }
+    }
+
+    // 3. Check if it has the format owner/repo
+    if let Some((repo, tag)) = parse_hf_identifier(trimmed) {
+        return ModelInputKind::AmbiguousOwnerRepo(repo, tag);
+    }
+
+    // 4. Fallback: standard model name
+    ModelInputKind::Standard(trimmed.to_string())
+}
+
 /// Extracts quantization, description, sharding info, and base name from a GGUF file
 fn extract_quant_info(filename: &str) -> (String, String, Option<(usize, usize)>, String) {
     static SHARD_RE: LazyLock<Regex> =
@@ -510,6 +593,30 @@ mod tests {
         assert_eq!(
             parse_hf_identifier("mistral"),
             None
+        );
+    }
+
+    #[test]
+    fn test_parse_model_input() {
+        assert_eq!(
+            parse_model_input("https://ollama.com/tobestyledintro/Ternary-Bonsai-2-27B"),
+            ModelInputKind::ExplicitOllama("tobestyledintro/Ternary-Bonsai-2-27B".to_string())
+        );
+        assert_eq!(
+            parse_model_input("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF"),
+            ModelInputKind::ExplicitHf("bartowski/Llama-3.2-3B-Instruct-GGUF".to_string(), None)
+        );
+        assert_eq!(
+            parse_model_input("hf.co/bartowski/Llama-3.2-3B-Instruct-GGUF:Q4_K_M"),
+            ModelInputKind::ExplicitHf("bartowski/Llama-3.2-3B-Instruct-GGUF".to_string(), Some("Q4_K_M".to_string()))
+        );
+        assert_eq!(
+            parse_model_input("tobestyledintro/Ternary-Bonsai-2-27B"),
+            ModelInputKind::AmbiguousOwnerRepo("tobestyledintro/Ternary-Bonsai-2-27B".to_string(), None)
+        );
+        assert_eq!(
+            parse_model_input("llama3.2:3b"),
+            ModelInputKind::Standard("llama3.2:3b".to_string())
         );
     }
 

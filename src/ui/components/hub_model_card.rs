@@ -726,49 +726,31 @@ impl HubModelCard {
                         flags.map(|c| c.think).unwrap_or(false)
                             || badges.iter().any(|b| b == "thinking" || b == "reasoning")
                             || c_low.contains("reason")
-                            || c_low.contains("raison")
-                            || id_low.contains("r1")
-                            || id_low.contains("qwq")
                     }
                     "code" | "Code" => {
                         flags.map(|c| c.code).unwrap_or(false)
                             || badges.iter().any(|b| b == "code" || b == "coding")
                             || c_low.contains("code")
-                            || id_low.contains("coder")
-                            || id_low.contains("starcoder")
-                            || id_low.contains("sql")
                     }
                     "vision" | "Vision" => {
                         flags.map(|c| c.vision).unwrap_or(false)
                             || badges.iter().any(|b| b == "vision" || b == "multimodal")
                             || c_low.contains("vision")
-                            || id_low.contains("vision")
-                            || id_low.contains("llava")
-                            || id_low.contains("minicpm-v")
-                            || id_low.contains("bakllava")
                     }
                     "audio" | "Audio" => {
                         flags.map(|c| c.audio).unwrap_or(false)
                             || badges.iter().any(|b| b == "audio" || b == "voice" || b == "speech")
                             || c_low.contains("audio")
-                            || id_low.contains("whisper")
-                            || id_low.contains("audio")
-                            || id_low.contains("omni")
                     }
-                    "tools" | "Tools" => {
+                    "tools" | "Tools" | "outils" | "Outils" => {
                         flags.map(|c| c.tools).unwrap_or(false)
                             || badges.iter().any(|b| b == "tools")
                             || c_low.contains("tool")
-                            || info.description.to_lowercase().contains("tools")
-                            || info.description.to_lowercase().contains("function call")
                     }
                     "rag" | "embed" | "Embeddings" => {
                         flags.map(|c| c.embedding).unwrap_or(false)
                             || badges.iter().any(|b| b == "embedding" || b == "embed")
                             || c_low.contains("embed")
-                            || id_low.contains("embed")
-                            || id_low.contains("bge")
-                            || id_low.contains("nomic")
                     }
                     "lightweight" | "Léger" => {
                         let has_light_variant = info.variants.iter().any(|v| {
@@ -799,19 +781,8 @@ impl HubModelCard {
 
                         (has_light_variant || has_light_badge || is_light_named) && !self.is_cloud()
                     }
-                    "general" | "Général" => {
-                        let is_embed = flags.map(|c| c.embedding).unwrap_or(false)
-                            || badges.iter().any(|b| b == "embedding");
-                        !is_embed
-                            || c_low.contains("général")
-                            || c_low.contains("general")
-                            || c_low.contains("chat")
-                    }
                     "cybersecurity" | "cyber" => {
-                        c_low.contains("cyber") || c_low.contains("security") || id_low.contains("sec")
-                    }
-                    "specialized" => {
-                        c_low.contains("special") || c_low.contains("math") || c_low.contains("medical") || c_low.contains("law")
+                        c_low.contains("cyber") || c_low.contains("security")
                     }
                     _ => c_low.contains(&cat.to_lowercase()),
                 }

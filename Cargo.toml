@@ -1,6 +1,6 @@
 [package]
 name = "neuradex"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2021"
 authors = ["BazinFla"]
 description = "NeuraDex - Native Linux Control Center, Model Hub & Inference Studio"

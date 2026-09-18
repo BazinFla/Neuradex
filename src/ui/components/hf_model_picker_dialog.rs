@@ -21,10 +21,17 @@ impl HfModelPickerDialog {
         details: HfRepoDetails,
         snap: &HardwareSnapshot,
         installed_set: &HashSet<String>,
+        ollama_tag: Option<String>,
         on_select_tag: impl Fn(String) + 'static,
     ) {
+        let dlg_title = if ollama_tag.is_some() {
+            format!("📦 {}", details.model_name)
+        } else {
+            format!("🤗 {}", details.model_name)
+        };
+
         let dialog = Dialog::builder()
-            .title(format!("🤗 {}", details.model_name))
+            .title(dlg_title)
             .content_width(780)
             .content_height(640)
             .build();
@@ -48,6 +55,7 @@ impl HfModelPickerDialog {
             .build();
 
         let root_box = Box::new(Orientation::Vertical, 16);
+        let on_select_rc: Rc<dyn Fn(String)> = Rc::new(on_select_tag);
 
         // 1. MODEL & HARDWARE METADATA BANNER
         let meta_card = Box::new(Orientation::Vertical, 10);
@@ -139,17 +147,104 @@ impl HfModelPickerDialog {
         meta_card.append(&meta_inner);
         root_box.append(&meta_card);
 
-        // 2. SEARCH / QUICK FILTER
+        // 2. OLLAMA SECTION (Shown above HF when model exists on Ollama)
+        if let Some(ref o_tag) = ollama_tag {
+            let ollama_group = PreferencesGroup::builder()
+                .title(t!("hf_picker.ollama_section_title"))
+                .description(t!("hf_picker.ollama_section_desc"))
+                .build();
+
+            let ollama_box = ListBox::builder()
+                .css_classes(["boxed-list"])
+                .selection_mode(gtk4::SelectionMode::None)
+                .build();
+
+            let is_ollama_installed = ModelNameUtils::is_tag_installed(
+                installed_set.iter().map(|s| s.as_str()),
+                o_tag,
+            );
+
+            let row = ActionRow::builder().build();
+            let mut title_str = o_tag.clone();
+            if is_ollama_installed {
+                title_str.push_str(&format!("  {}", t!("hf_picker.installed")));
+            }
+            row.set_title(&title_str);
+            row.set_subtitle(&format!("ollama pull {}", o_tag));
+
+            let icon_name = if is_ollama_installed {
+                "emblem-ok-symbolic"
+            } else {
+                "application-x-addon-symbolic"
+            };
+            let prefix_icon = Image::from_icon_name(icon_name);
+            prefix_icon.set_pixel_size(20);
+            row.add_prefix(&prefix_icon);
+
+            let right_box = Box::new(Orientation::Horizontal, 8);
+            right_box.set_valign(Align::Center);
+
+            // Button to view model on ollama.com
+            let clean_repo = o_tag.split(':').next().unwrap_or(o_tag);
+            let ollama_url = format!("https://ollama.com/{}", clean_repo);
+            let btn_ollama_web = Button::builder()
+                .label(t!("hf_picker.open_ollama"))
+                .css_classes(["flat"])
+                .tooltip_text(t!("hf_picker.open_ollama_tooltip"))
+                .valign(Align::Center)
+                .build();
+            btn_ollama_web.connect_clicked(move |_| {
+                let _ = gtk4::gio::AppInfo::launch_default_for_uri(
+                    &ollama_url,
+                    None::<&gtk4::gio::AppLaunchContext>,
+                );
+            });
+            right_box.append(&btn_ollama_web);
+
+            let btn_download = Button::builder().valign(Align::Center).build();
+            if is_ollama_installed {
+                btn_download.set_label(&t!("hub.already_installed"));
+                btn_download.set_css_classes(&["flat"]);
+                btn_download.set_sensitive(false);
+                btn_download.set_tooltip_text(Some(&t!("hub.already_installed_tooltip")));
+            } else {
+                btn_download.set_label(&t!("hf_picker.ollama_pull_btn"));
+                btn_download.set_css_classes(&["suggested-action"]);
+
+                let dialog_close = dialog.clone();
+                let on_select = on_select_rc.clone();
+                let target_tag = o_tag.clone();
+
+                btn_download.connect_clicked(move |_| {
+                    on_select(target_tag.clone());
+                    dialog_close.close();
+                });
+            }
+            right_box.append(&btn_download);
+            row.add_suffix(&right_box);
+
+            ollama_box.append(&row);
+            ollama_group.add(&ollama_box);
+            root_box.append(&ollama_group);
+        }
+
+        // 3. SEARCH / QUICK FILTER FOR HF VARIANTS
         let search_entry = SearchEntry::builder()
             .placeholder_text(t!("hf_picker.search_placeholder"))
             .margin_bottom(4)
             .build();
         root_box.append(&search_entry);
 
-        // 3. GGUF VARIANTS LIST
+        // 4. GGUF VARIANTS LIST (Hugging Face)
+        let (variants_title, variants_desc) = if ollama_tag.is_some() {
+            (t!("hf_picker.hf_variants_title"), t!("hf_picker.hf_variants_desc"))
+        } else {
+            (t!("hf_picker.variants_title"), t!("hf_picker.variants_desc"))
+        };
+
         let list_group = PreferencesGroup::builder()
-            .title(t!("hf_picker.variants_title"))
-            .description(t!("hf_picker.variants_desc"))
+            .title(variants_title)
+            .description(variants_desc)
             .build();
 
         let list_box = ListBox::builder()
@@ -157,7 +252,6 @@ impl HfModelPickerDialog {
             .selection_mode(gtk4::SelectionMode::None)
             .build();
 
-        let on_select_rc: Rc<dyn Fn(String)> = Rc::new(on_select_tag);
         let rows_ref: Rc<RefCell<Vec<(String, ActionRow)>>> = Rc::new(RefCell::new(Vec::new()));
 
         for file in &details.files {
@@ -228,7 +322,7 @@ impl HfModelPickerDialog {
                 if file.is_recommended || fitness == HardwareFitness::FullGpu {
                     btn_download.set_css_classes(&["suggested-action"]);
                 } else {
-                    btn_download.set_css_classes(&["flat"]);
+                    btn_download.set_css_classes(&["suggested-action", "light"]);
                 }
 
                 let dialog_close = dialog.clone();

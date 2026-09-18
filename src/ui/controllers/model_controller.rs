@@ -4,8 +4,8 @@ use crate::core::config::CustomModelSettings;
 use crate::core::spawn_async;
 use crate::t;
 use crate::ui::header::Header;
+use crate::ui::helpers::create_copyable_toast;
 use crate::ui::views::{HubView, InstancesView};
-use adw::Toast;
 use adw::ToastOverlay;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -56,17 +56,17 @@ impl ModelController {
                 match action_res {
                     Ok(_) => {
                         if was_unload {
-                            t.add_toast(Toast::new(&t!("toasts.vram_freed", name = m)));
+                            t.add_toast(create_copyable_toast(&t!("toasts.vram_freed", name = m)));
                         } else {
-                            t.add_toast(Toast::new(&t!("toasts.model_loaded", name = m)));
+                            t.add_toast(create_copyable_toast(&t!("toasts.model_loaded", name = m)));
                         }
                         on_finished(true);
                     }
                     Err(e) => {
                         if was_unload {
-                            t.add_toast(Toast::new(&t!("toasts.vram_flush_error", err = e)));
+                            t.add_toast(create_copyable_toast(&t!("toasts.vram_flush_error", err = e)));
                         } else {
-                            t.add_toast(Toast::new(&t!("toasts.load_error", err = e)));
+                            t.add_toast(create_copyable_toast(&t!("toasts.load_error", err = e)));
                         }
                         on_finished(false);
                     }
@@ -94,11 +94,11 @@ impl ModelController {
             },
             move |(m, res)| match res {
                 Ok(_) => {
-                    t.add_toast(Toast::new(&t!("toasts.model_deleted", name = m)));
+                    t.add_toast(create_copyable_toast(&t!("toasts.model_deleted", name = m)));
                     on_finished(true);
                 }
                 Err(e) => {
-                    t.add_toast(Toast::new(&t!("toasts.delete_error", err = e)));
+                    t.add_toast(create_copyable_toast(&t!("toasts.delete_error", err = e)));
                     on_finished(false);
                 }
             },
@@ -121,7 +121,7 @@ impl ModelController {
         let h = hub_view.clone();
         let tag_str = tag.to_string();
 
-        t.add_toast(Toast::new(&t!("toasts.download_starting", name = tag)));
+        t.add_toast(create_copyable_toast(&t!("toasts.download_starting", name = tag)));
         h.set_pull_progress(&tag_str, true, &t!("toasts.connecting_checking"), None);
 
         let cancelled = Arc::new(AtomicBool::new(false));
@@ -210,7 +210,7 @@ impl ModelController {
                         h.set_pull_progress(&model_name, false, &t!("toasts.download_success", name = model_name.clone()), Some(1.0));
                         hdr_finish.mark_download_finished(&orig_tag, &t!("toasts.download_success", name = orig_tag.clone()), true);
                         hdr_finish.mark_download_finished(&model_name, &t!("toasts.download_success", name = model_name.clone()), true);
-                        t.add_toast(Toast::new(&t!("toasts.download_success", name = model_name)));
+                        t.add_toast(create_copyable_toast(&t!("toasts.download_success", name = model_name)));
                         on_finished(true);
                     }
                     Err(e) => {
@@ -225,7 +225,7 @@ impl ModelController {
                         h.set_pull_progress(&model_name, false, &label, None);
                         hdr_finish.mark_download_finished(&orig_tag, &label, false);
                         hdr_finish.mark_download_finished(&model_name, &label, false);
-                        t.add_toast(Toast::new(&format!("❌ {}", e)));
+                        t.add_toast(create_copyable_toast(&format!("❌ {}", e)));
                         on_finished(false);
                     }
                 }
@@ -247,7 +247,7 @@ impl ModelController {
         let name_str = name.to_string();
         let modelfile_str = modelfile.to_string();
 
-        t.add_toast(Toast::new(&t!("toasts.compiling_variant", name = name)));
+        t.add_toast(create_copyable_toast(&t!("toasts.compiling_variant", name = name)));
 
         let name_async = name_str.clone();
         spawn_async(
@@ -258,11 +258,11 @@ impl ModelController {
             move |(model_name, res)| {
                 match res {
                     Ok(_) => {
-                        t.add_toast(Toast::new(&t!("toasts.variant_created", name = model_name)));
+                        t.add_toast(create_copyable_toast(&t!("toasts.variant_created", name = model_name)));
                         on_finished(true);
                     }
                     Err(e) => {
-                        t.add_toast(Toast::new(&t!("toasts.compile_failed", err = e)));
+                        t.add_toast(create_copyable_toast(&t!("toasts.compile_failed", err = e)));
                         on_finished(false);
                     }
                 }
@@ -270,4 +270,3 @@ impl ModelController {
         );
     }
 }
-

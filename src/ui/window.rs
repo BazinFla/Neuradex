@@ -1,6 +1,13 @@
 use crate::api::github::GitHubClient;
-use crate::api::hub_remote::parse_hf_identifier;
+use crate::api::hub_remote::{parse_model_input, HfRepoDetails, ModelInputKind};
 use crate::api::types::{ChatMetrics, ChatMessage, ChatRequest, ChatStreamChunk, ModelPs, ModelTag};
+
+enum ResolvedCustomPull {
+    Both(String, HfRepoDetails),
+    Ollama(String),
+    Hf(HfRepoDetails),
+    Fallback(String),
+}
 use crate::api::OllamaClient;
 use crate::core::config::{ApiProfile, ApiProviderType, AppConfig};
 use crate::core::hardware::HardwareMonitor;
@@ -12,9 +19,10 @@ use crate::t;
 use crate::ui::components::{HfModelPickerDialog, ModelSettingsDialog};
 use crate::ui::controllers::ModelController;
 use crate::ui::header::Header;
+use crate::ui::helpers::create_copyable_toast;
 use crate::ui::views::{ChatView, HubView, InstancesView, LogsView, SettingsView};
 use adw::prelude::*;
-use adw::{Application, ApplicationWindow, Toast, ToastOverlay, ViewStack};
+use adw::{Application, ApplicationWindow, ToastOverlay, ViewStack};
 use gtk4::{Box, Orientation};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -160,9 +168,9 @@ impl AppContext {
             move |name, is_loaded| {
                 ctx_action.instances_view.set_model_loading(name, true);
                 if is_loaded {
-                    ctx_action.toast_overlay.add_toast(Toast::new(&t!("toasts.vram_freeing", name = name)));
+                    ctx_action.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.vram_freeing", name = name)));
                 } else {
-                    ctx_action.toast_overlay.add_toast(Toast::new(&t!("toasts.loading_vram", name = name)));
+                    ctx_action.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.loading_vram", name = name)));
                 }
 
                 let ctx_refresh = ctx_action.clone();
@@ -227,7 +235,7 @@ impl AppContext {
         let ctx_running = self.clone();
         self.instances_view.update_running(running, move |name| {
             ctx_running.instances_view.set_model_loading(name, true);
-            ctx_running.toast_overlay.add_toast(Toast::new(&t!("toasts.vram_freeing", name = name)));
+            ctx_running.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.vram_freeing", name = name)));
 
             let ctx_res = ctx_running.clone();
             ModelController::load_or_unload_model(
@@ -313,7 +321,7 @@ impl AppContext {
                     ctx_act.client.borrow_mut().set_api_key(p_tok);
                     ctx_act.header.update_profiles(&ctx_act.config.borrow().profiles, Some(id));
                     ctx_act.settings_view.set_active_profile_row(id);
-                    ctx_act.toast_overlay.add_toast(Toast::new(&t!("toasts.profile_active", name = p_name)));
+                    ctx_act.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.profile_active", name = p_name)));
 
                     let cfg_snap = ctx_act.config.borrow().clone();
                     let t = ctx_act.toast_overlay.clone();
@@ -321,8 +329,8 @@ impl AppContext {
                     spawn_async(
                         async move { LifecycleManager::apply_systemd_override(&cfg_snap).await },
                         move |res| match res {
-                            Ok(_) => t.add_toast(Toast::new(&t!("toasts.systemd_synced", name = name_clone))),
-                            Err(e) => t.add_toast(Toast::new(&t!("toasts.systemd_error", err = e))),
+                            Ok(_) => t.add_toast(create_copyable_toast(&t!("toasts.systemd_synced", name = name_clone))),
+                            Err(e) => t.add_toast(create_copyable_toast(&t!("toasts.systemd_error", err = e))),
                         },
                     );
                 }
@@ -333,7 +341,7 @@ impl AppContext {
                 cfg.delete_profile(id);
                 let _ = cfg.save();
                 drop(cfg);
-                ctx_del.toast_overlay.add_toast(Toast::new(&t!("toasts.profile_deleted")));
+                ctx_del.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.profile_deleted")));
                 ctx_del.sync_profiles();
             },
             move |id| {
@@ -342,13 +350,13 @@ impl AppContext {
                     if let Some(pub_key) = ApiVault::get_public_key_for_profile(p) {
                         if let Some(display) = gtk4::gdk::Display::default() {
                             display.clipboard().set_text(&pub_key);
-                            ctx_copy.toast_overlay.add_toast(Toast::new(&t!(
+                            ctx_copy.toast_overlay.add_toast(create_copyable_toast(&t!(
                                 "toasts.ssh_key_copied",
                                 name = p.name
                             )));
                         }
                     } else {
-                        ctx_copy.toast_overlay.add_toast(Toast::new(&t!(
+                        ctx_copy.toast_overlay.add_toast(create_copyable_toast(&t!(
                             "toasts.ssh_key_not_found",
                             name = p.name
                         )));
@@ -368,8 +376,8 @@ impl AppContext {
                 spawn_async(
                     async move { LifecycleManager::apply_systemd_override(&cfg_snap).await },
                     move |res| match res {
-                        Ok(_) => t.add_toast(Toast::new(&t!("toasts.key_injected_systemd", name = name_clone))),
-                        Err(e) => t.add_toast(Toast::new(&t!("toasts.key_inject_failed", err = e))),
+                        Ok(_) => t.add_toast(create_copyable_toast(&t!("toasts.key_injected_systemd", name = name_clone))),
+                        Err(e) => t.add_toast(create_copyable_toast(&t!("toasts.key_inject_failed", err = e))),
                     },
                 );
             },
@@ -407,7 +415,7 @@ impl AppContext {
 
             if changed {
                 ctx_hdr.client.borrow_mut().set_api_key(p_tok);
-                ctx_hdr.toast_overlay.add_toast(Toast::new(&t!("toasts.profile_active", name = p_name)));
+                ctx_hdr.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.profile_active", name = p_name)));
                 ctx_hdr.settings_view.set_active_profile_row(id);
 
                 let cfg_snap = ctx_hdr.config.borrow().clone();
@@ -416,8 +424,8 @@ impl AppContext {
                 spawn_async(
                     async move { LifecycleManager::apply_systemd_override(&cfg_snap).await },
                     move |res| match res {
-                        Ok(_) => t.add_toast(Toast::new(&t!("toasts.systemd_synced", name = name_clone))),
-                        Err(e) => t.add_toast(Toast::new(&t!("toasts.systemd_error", err = e))),
+                        Ok(_) => t.add_toast(create_copyable_toast(&t!("toasts.systemd_synced", name = name_clone))),
+                        Err(e) => t.add_toast(create_copyable_toast(&t!("toasts.systemd_error", err = e))),
                     },
                 );
             }
@@ -427,12 +435,12 @@ impl AppContext {
         let ctx_start = self.clone();
         self.settings_view.connect_start(move || {
             let t = ctx_start.toast_overlay.clone();
-            t.add_toast(Toast::new(&t!("toasts.daemon_starting")));
+            t.add_toast(create_copyable_toast(&t!("toasts.daemon_starting")));
             spawn_async(
                 async move { LifecycleManager::start_service().await },
                 move |res| match res {
-                    Ok(_) => t.add_toast(Toast::new(&t!("toasts.daemon_started"))),
-                    Err(e) => t.add_toast(Toast::new(&t!("toasts.daemon_start_failed", err = e))),
+                    Ok(_) => t.add_toast(create_copyable_toast(&t!("toasts.daemon_started"))),
+                    Err(e) => t.add_toast(create_copyable_toast(&t!("toasts.daemon_start_failed", err = e))),
                 },
             );
         });
@@ -440,12 +448,12 @@ impl AppContext {
         let ctx_stop = self.clone();
         self.settings_view.connect_stop(move || {
             let t = ctx_stop.toast_overlay.clone();
-            t.add_toast(Toast::new(&t!("toasts.daemon_stopping")));
+            t.add_toast(create_copyable_toast(&t!("toasts.daemon_stopping")));
             spawn_async(
                 async move { LifecycleManager::stop_service().await },
                 move |res| match res {
-                    Ok(_) => t.add_toast(Toast::new(&t!("toasts.daemon_stopped"))),
-                    Err(e) => t.add_toast(Toast::new(&t!("toasts.daemon_stop_failed", err = e))),
+                    Ok(_) => t.add_toast(create_copyable_toast(&t!("toasts.daemon_stopped"))),
+                    Err(e) => t.add_toast(create_copyable_toast(&t!("toasts.daemon_stop_failed", err = e))),
                 },
             );
         });
@@ -453,12 +461,12 @@ impl AppContext {
         let ctx_restart = self.clone();
         self.settings_view.connect_restart(move || {
             let t = ctx_restart.toast_overlay.clone();
-            t.add_toast(Toast::new(&t!("toasts.daemon_restarting")));
+            t.add_toast(create_copyable_toast(&t!("toasts.daemon_restarting")));
             spawn_async(
                 async move { LifecycleManager::restart_service().await },
                 move |res| match res {
-                    Ok(_) => t.add_toast(Toast::new(&t!("toasts.daemon_restarted"))),
-                    Err(e) => t.add_toast(Toast::new(&t!("toasts.daemon_restart_failed", err = e))),
+                    Ok(_) => t.add_toast(create_copyable_toast(&t!("toasts.daemon_restarted"))),
+                    Err(e) => t.add_toast(create_copyable_toast(&t!("toasts.daemon_restart_failed", err = e))),
                 },
             );
         });
@@ -468,12 +476,12 @@ impl AppContext {
         self.settings_view.connect_apply_systemd(move || {
             let cfg = ctx_sys.config.borrow().clone();
             let t = ctx_sys.toast_overlay.clone();
-            t.add_toast(Toast::new(&t!("toasts.sys_applying")));
+            t.add_toast(create_copyable_toast(&t!("toasts.sys_applying")));
             spawn_async(
                 async move { LifecycleManager::apply_systemd_override(&cfg).await },
                 move |res| match res {
-                    Ok(_) => t.add_toast(Toast::new(&t!("toasts.sys_applied"))),
-                    Err(e) => t.add_toast(Toast::new(&t!("toasts.sys_apply_failed", err = e))),
+                    Ok(_) => t.add_toast(create_copyable_toast(&t!("toasts.sys_applied"))),
+                    Err(e) => t.add_toast(create_copyable_toast(&t!("toasts.sys_apply_failed", err = e))),
                 },
             );
         });
@@ -563,7 +571,7 @@ impl AppContext {
             let t = ctx_upd.toast_overlay.clone();
             let s = ctx_upd.settings_view.clone();
             let cur_ver = ctx_upd.last_known_version.borrow().clone().unwrap_or_else(|| "0.0.0".to_string());
-            t.add_toast(Toast::new(&t!("toasts.checking_updates")));
+            t.add_toast(create_copyable_toast(&t!("toasts.checking_updates")));
 
             spawn_async(
                 async move {
@@ -573,13 +581,13 @@ impl AppContext {
                     Ok(info) => {
                         s.set_update_result(&info);
                         if info.has_update {
-                            t.add_toast(Toast::new(&t!("toasts.update_available", ver = info.latest_version)));
+                            t.add_toast(create_copyable_toast(&t!("toasts.update_available", ver = info.latest_version)));
                         } else {
-                            t.add_toast(Toast::new(&t!("toasts.already_latest")));
+                            t.add_toast(create_copyable_toast(&t!("toasts.already_latest")));
                         }
                     }
                     Err(e) => {
-                        t.add_toast(Toast::new(&t!("toasts.check_failed", err = e)));
+                        t.add_toast(create_copyable_toast(&t!("toasts.check_failed", err = e)));
                     }
                 },
             );
@@ -593,7 +601,7 @@ impl AppContext {
             } else {
                 t!("settings.lang_restart_hint")
             };
-            ctx_lang.toast_overlay.add_toast(Toast::new(&msg));
+            ctx_lang.toast_overlay.add_toast(create_copyable_toast(&msg));
         });
 
 
@@ -631,9 +639,9 @@ impl AppContext {
 
             let _ = cfg.save();
             drop(cfg);
-            ctx_save.toast_overlay.add_toast(Toast::new(&t!("toasts.profile_saved", name = profile.name)));
+            ctx_save.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.profile_saved", name = profile.name)));
             if let Some(err) = keyring_warn {
-                ctx_save.toast_overlay.add_toast(Toast::new(&format!("Keyring: {} (fallback local)", err)));
+                ctx_save.toast_overlay.add_toast(create_copyable_toast(&format!("Keyring: {} (fallback local)", err)));
             }
             ctx_save.sync_profiles();
         });
@@ -644,7 +652,7 @@ impl AppContext {
         self.settings_view.connect_generate_member_key(move |member_name| {
             let t = ctx_gen.toast_overlay.clone();
             if member_name.is_empty() {
-                t.add_toast(Toast::new(&t!("toasts.member_name_required")));
+                t.add_toast(create_copyable_toast(&t!("toasts.member_name_required")));
                 return;
             }
 
@@ -658,13 +666,13 @@ impl AppContext {
                         display.clipboard().set_text(key_info.public_key_content.as_str());
                     }
 
-                    t.add_toast(Toast::new(&t!(
+                    t.add_toast(create_copyable_toast(&t!(
                         "toasts.ssh_key_generated",
                         name = member_name
                     )));
                 }
                 Err(e) => {
-                    t.add_toast(Toast::new(&t!("toasts.ssh_gen_failed", err = e)));
+                    t.add_toast(create_copyable_toast(&t!("toasts.ssh_gen_failed", err = e)));
                 }
             }
         });
@@ -697,7 +705,7 @@ impl AppContext {
                 }
             }
 
-            t.add_toast(Toast::new(&t!(
+            t.add_toast(create_copyable_toast(&t!(
                 "toasts.member_saved_activated",
                 name = member_name
             )));
@@ -711,8 +719,8 @@ impl AppContext {
             spawn_async(
                 async move { LifecycleManager::apply_systemd_override(&cfg_snap).await },
                 move |res| match res {
-                    Ok(_) => t_sub.add_toast(Toast::new(&t!("toasts.systemd_synced", name = name_clone))),
-                    Err(e) => t_sub.add_toast(Toast::new(&t!("toasts.systemd_error", err = e))),
+                    Ok(_) => t_sub.add_toast(create_copyable_toast(&t!("toasts.systemd_synced", name = name_clone))),
+                    Err(e) => t_sub.add_toast(create_copyable_toast(&t!("toasts.systemd_error", err = e))),
                 },
             );
         });
@@ -723,7 +731,7 @@ impl AppContext {
             let ctx = ctx_un_all.clone();
             let client = ctx.client.borrow().clone();
 
-            ctx.toast_overlay.add_toast(Toast::new(&t!("toasts.unloading_all")));
+            ctx.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.unloading_all")));
             ctx.instances_view.set_unloading_all(true);
 
             spawn_async(
@@ -740,12 +748,12 @@ impl AppContext {
                 move |unloaded_count| {
                     ctx.instances_view.set_unloading_all(false);
                     if unloaded_count > 0 {
-                        ctx.toast_overlay.add_toast(Toast::new(&t!(
+                        ctx.toast_overlay.add_toast(create_copyable_toast(&t!(
                             "toasts.models_unloaded_count",
                             count = unloaded_count
                         )));
                     } else {
-                        ctx.toast_overlay.add_toast(Toast::new(&t!("toasts.no_model_was_loaded")));
+                        ctx.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.no_model_was_loaded")));
                     }
                     ctx.refresh(false);
                 },
@@ -757,51 +765,136 @@ impl AppContext {
         self.hub_view.connect_custom_pull(move |input_str| {
             let ctx = ctx_hub_inspect.clone();
 
-            if let Some((repo_id, tag_opt)) = parse_hf_identifier(&input_str) {
-                // If a specific tag is already provided (e.g. hf.co/...:Q8_0 or user/repo:Q4_K_M), download directly
-                if let Some(tag) = tag_opt {
-                    let full_tag = format!("hf.co/{}:{}", repo_id, tag);
-                    ctx.pull_model(&full_tag);
-                    return;
+            match parse_model_input(&input_str) {
+                ModelInputKind::ExplicitOllama(tag) => {
+                    ctx.pull_model(&tag);
                 }
+                ModelInputKind::ExplicitHf(repo_id, tag_opt) => {
+                    if let Some(tag) = tag_opt {
+                        let full_tag = format!("hf.co/{}:{}", repo_id, tag);
+                        ctx.pull_model(&full_tag);
+                        return;
+                    }
 
-                ctx.toast_overlay.add_toast(Toast::new(&t!("toasts.inspecting_hf", name = repo_id)));
+                    ctx.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.inspecting_hf", name = repo_id)));
+                    let hf_token = ApiVault::get_hf_token(&ctx.config.borrow().profiles);
+                    let repo_id_async = repo_id.clone();
+                    let ctx_cb = ctx.clone();
 
-                let hf_token = ApiVault::get_hf_token(&ctx.config.borrow().profiles);
-                let repo_id_async = repo_id.clone();
-                let ctx_cb = ctx.clone();
-
-                spawn_async(
-                    async move {
-                        let web_client = crate::api::OllamaWebClient::new();
-                        web_client.fetch_hf_repo_details(&repo_id_async, hf_token.as_deref()).await
-                    },
-                    move |res| {
-                        match res {
-                            Ok(details) => {
-                                let snap = ctx_cb.hw_monitor.borrow_mut().snapshot();
-                                let installed = ctx_cb.hub_view.installed_names();
-                                let ctx_pull = ctx_cb.clone();
-                                HfModelPickerDialog::show(
-                                    Some(&ctx_cb.window),
-                                    details,
-                                    &snap,
-                                    &installed,
-                                    move |chosen_tag| {
-                                        ctx_pull.pull_model(&chosen_tag);
-                                    },
-                                );
+                    spawn_async(
+                        async move {
+                            let web_client = crate::api::OllamaWebClient::new();
+                            web_client.fetch_hf_repo_details(&repo_id_async, hf_token.as_deref()).await
+                        },
+                        move |res| {
+                            match res {
+                                Ok(details) => {
+                                    let snap = ctx_cb.hw_monitor.borrow_mut().snapshot();
+                                    let installed = ctx_cb.hub_view.installed_names();
+                                    let ctx_pull = ctx_cb.clone();
+                                    HfModelPickerDialog::show(
+                                        Some(&ctx_cb.window),
+                                        details,
+                                        &snap,
+                                        &installed,
+                                        None,
+                                        move |chosen_tag| {
+                                            ctx_pull.pull_model(&chosen_tag);
+                                        },
+                                    );
+                                }
+                                Err(e) => {
+                                    ctx_cb.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.hf_fallback_standard", err = e)));
+                                    ctx_cb.pull_model(&format!("hf.co/{}", repo_id));
+                                }
                             }
-                            Err(e) => {
-                                ctx_cb.toast_overlay.add_toast(Toast::new(&t!("toasts.hf_fallback_standard", err = e)));
-                                ctx_cb.pull_model(&format!("hf.co/{}", repo_id));
+                        },
+                    );
+                }
+                ModelInputKind::Standard(name) => {
+                    ctx.pull_model(&name);
+                }
+                ModelInputKind::AmbiguousOwnerRepo(repo_id, tag_opt) => {
+                    let hf_token = ApiVault::get_hf_token(&ctx.config.borrow().profiles);
+                    let repo_id_async = repo_id.clone();
+                    let tag_opt_clone = tag_opt.clone();
+                    let ctx_cb = ctx.clone();
+
+                    ctx.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.resolving_model", name = repo_id)));
+
+                    spawn_async(
+                        async move {
+                            let web_client = crate::api::OllamaWebClient::new();
+                            let repo_id_ollama = repo_id_async.clone();
+                            let repo_id_hf = repo_id_async.clone();
+                            let hf_token_clone = hf_token.clone();
+
+                            let tag_str = if let Some(ref t) = tag_opt_clone {
+                                format!("{}:{}", repo_id_async, t)
+                            } else {
+                                repo_id_async
+                            };
+
+                            let (ollama_exists, hf_res) = tokio::join!(
+                                web_client.check_ollama_model_exists(&repo_id_ollama),
+                                web_client.fetch_hf_repo_details(&repo_id_hf, hf_token_clone.as_deref())
+                            );
+
+                            match (ollama_exists, hf_res) {
+                                (true, Ok(details)) => Ok(ResolvedCustomPull::Both(tag_str, details)),
+                                (true, Err(_)) => Ok(ResolvedCustomPull::Ollama(tag_str)),
+                                (false, Ok(details)) => Ok(ResolvedCustomPull::Hf(details)),
+                                (false, Err(_)) => Ok(ResolvedCustomPull::Fallback(tag_str)),
                             }
-                        }
-                    },
-                );
-            } else {
-                // Standard official Ollama model (e.g. llama3.2:3b, mistral)
-                ctx.pull_model(&input_str);
+                        },
+                        move |res: Result<ResolvedCustomPull, ()>| {
+                            if let Ok(target) = res {
+                                match target {
+                                    ResolvedCustomPull::Both(tag, details) => {
+                                        let snap = ctx_cb.hw_monitor.borrow_mut().snapshot();
+                                        let installed = ctx_cb.hub_view.installed_names();
+                                        let ctx_pull = ctx_cb.clone();
+                                        HfModelPickerDialog::show(
+                                            Some(&ctx_cb.window),
+                                            details,
+                                            &snap,
+                                            &installed,
+                                            Some(tag),
+                                            move |chosen_tag| {
+                                                ctx_pull.pull_model(&chosen_tag);
+                                            },
+                                        );
+                                    }
+                                    ResolvedCustomPull::Ollama(tag) => {
+                                        ctx_cb.pull_model(&tag);
+                                    }
+                                    ResolvedCustomPull::Hf(details) => {
+                                        let snap = ctx_cb.hw_monitor.borrow_mut().snapshot();
+                                        let installed = ctx_cb.hub_view.installed_names();
+                                        let ctx_pull = ctx_cb.clone();
+                                        HfModelPickerDialog::show(
+                                            Some(&ctx_cb.window),
+                                            details,
+                                            &snap,
+                                            &installed,
+                                            None,
+                                            move |chosen_tag| {
+                                                ctx_pull.pull_model(&chosen_tag);
+                                            },
+                                        );
+                                    }
+                                    ResolvedCustomPull::Fallback(tag) => {
+                                        ctx_cb.toast_overlay.add_toast(create_copyable_toast(&t!(
+                                            "toasts.model_not_found_both",
+                                            name = tag
+                                        )));
+                                        ctx_cb.pull_model(&tag);
+                                    }
+                                }
+                            }
+                        },
+                    );
+                }
             }
         });
 
@@ -811,7 +904,7 @@ impl AppContext {
             let ctx = ctx_cat_refresh.clone();
 
             ctx.hub_view.set_syncing(true);
-            ctx.toast_overlay.add_toast(Toast::new(&t!("toasts.catalog_refreshing")));
+            ctx.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.catalog_refreshing")));
 
             spawn_async(
                 async move {
@@ -843,10 +936,10 @@ impl AppContext {
                                     ctx_pull.pull_model(&tag);
                                 }
                             });
-                            ctx.toast_overlay.add_toast(Toast::new(&t!("toasts.catalog_refreshed", count = count)));
+                            ctx.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.catalog_refreshed", count = count)));
                         }
                         Err(e) => {
-                            ctx.toast_overlay.add_toast(Toast::new(&t!("toasts.catalog_refresh_failed", err = e)));
+                            ctx.toast_overlay.add_toast(create_copyable_toast(&t!("toasts.catalog_refresh_failed", err = e)));
                         }
                     }
                 },
@@ -1102,9 +1195,24 @@ impl MainWindow {
 
         let main_box = Box::new(Orientation::Vertical, 0);
         main_box.append(header.widget());
-        main_box.append(&view_stack);
-        toast_overlay.set_child(Some(&main_box));
-        window.set_content(Some(&toast_overlay));
+
+        let content_overlay = gtk4::Overlay::new();
+        content_overlay.set_vexpand(true);
+        content_overlay.set_hexpand(true);
+        content_overlay.set_child(Some(&view_stack));
+
+        let top_box = Box::new(Orientation::Vertical, 0);
+        top_box.set_size_request(-1, 0);
+        top_box.set_can_target(false);
+        toast_overlay.set_child(Some(&top_box));
+        toast_overlay.set_valign(gtk4::Align::Start);
+        toast_overlay.set_halign(gtk4::Align::Fill);
+        toast_overlay.set_margin_top(12);
+
+        content_overlay.add_overlay(&toast_overlay);
+        main_box.append(&content_overlay);
+
+        window.set_content(Some(&main_box));
 
         Header::setup_actions(&window, &view_stack, &header);
 

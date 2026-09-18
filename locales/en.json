@@ -113,8 +113,8 @@
     "sync_btn": "🌐 Sync",
     "sync_tooltip": "Download all 230+ official models from ollama.com",
     "search_placeholder": "Search a model or paste a Hugging Face link (e.g. deepseek, llama3, user/repo, hf.co/...)",
-    "pull_btn": "⬇️ Download",
-    "pull_tooltip": "Download this model directly via Ollama",
+    "pull_btn": "🔍 Search",
+    "pull_tooltip": "Search and download from Ollama or Hugging Face",
     "inspect_hf_btn": "🤗 Explore GGUFs",
     "inspect_hf_tooltip": "Explore and download GGUF quantizations from Hugging Face",
     "sort_label": "Sort by :",
@@ -133,14 +133,13 @@
     "categories": {
       "all": "🌟 All models",
       "reasoning": "🧠 Reasoning",
-      "vision": "👁️ Vision & Multimodal",
-      "code": "💻 Code & Development",
+      "vision": "👁️ Vision",
+      "code": "💻 Code",
       "lightweight": "⚡ Lightweight (<4B)",
-      "general": "🏢 General & Versatile",
-      "rag": "🧬 RAG & Embeddings",
+      "rag": "🧬 Embeddings",
       "cybersecurity": "🔒 Cybersecurity",
-      "specialized": "🔧 Specialized",
-      "cloud": "☁️ Cloud Models"
+      "tools": "🔧 Tools",
+      "cloud": "☁️ Cloud"
     },
     "sort": {
       "popularity": "🔥 Most popular",
@@ -168,6 +167,13 @@
     "installed": "✅ Installed",
     "shards": "🧩 {count} combined shards",
     "shards_combined": "🧩 {count} combined shards",
+    "ollama_section_title": "🦙 Ollama Library",
+    "ollama_section_desc": "Direct download from the Ollama community or official library",
+    "ollama_pull_btn": "⬇️ Download from Ollama",
+    "open_ollama": "🌐 Open on Ollama",
+    "open_ollama_tooltip": "View model page on ollama.com",
+    "hf_variants_title": "🤗 Hugging Face GGUF Quantizations",
+    "hf_variants_desc": "Select the quantization suited for your VRAM and start downloading.",
     "already_installed": "✅ Already installed",
     "download": "⬇️ Download"
   },
@@ -541,12 +547,12 @@
     "stream_desc": "Live inference logs, request timing, and system diagnostics"
   },
   "capabilities": {
-    "reasoning": "Reasoning & Thinking",
-    "vision": "Vision & Multimodal",
-    "code": "Code & Development",
-    "embedding": "Embeddings & RAG",
-    "tools": "Tools & Function Calling",
-    "audio": "Audio & Voice"
+    "reasoning": "Reasoning",
+    "vision": "Vision",
+    "code": "Code",
+    "embedding": "Embeddings",
+    "tools": "Tools",
+    "audio": "Audio"
   },
   "fitness": {
     "full_gpu": "🟢 100% GPU VRAM",
@@ -594,7 +600,9 @@
     "models_unloaded_count": "✅ {count} model(s) unloaded from memory!",
     "no_model_was_loaded": "ℹ️ No model was loaded in memory.",
     "inspecting_hf": "🔍 Inspecting Hugging Face repository '{name}'...",
+    "resolving_model": "🔍 Resolving model '{name}' (Ollama & Hugging Face)...",
     "hf_fallback_standard": "ℹ️ {err} - Standard download...",
+    "model_not_found_both": "⚠️ Model '{name}' not found on Ollama or Hugging Face. Attempting standard pull...",
     "catalog_refreshing": "🔄 Refreshing model catalog...",
     "catalog_refreshed": "✅ Catalog refreshed ({count} models)!",
     "catalog_refresh_failed": "❌ Failed to refresh catalog: {err}",
@@ -620,7 +628,11 @@
     "variant_created": "✨ Variant '{name}' created successfully in Ollama!",
     "compile_failed": "❌ Compilation failed: {err}",
     "model_unloaded": "🧹 Model '{name}' unloaded from VRAM.",
-    "all_unloaded": "🧹 All active models unloaded from memory."
+    "all_unloaded": "🧹 All active models unloaded from memory.",
+    "copy_btn": "📋 Copy",
+    "copied_btn": "✅ Copied!",
+    "copy_tooltip": "Copy notification text",
+    "copied_tooltip": "Copied to clipboard!"
   },
   "vault": {
     "ollama_cloud_empty": "Ollama Cloud key is empty",

@@ -1,6 +1,6 @@
 # Maintainer: Flavien Bazin <bazinfla@users.noreply.github.com>
 pkgname=neuradex
-pkgver=0.1.7
+pkgver=0.1.8
 pkgrel=1
 pkgdesc="Native Linux desktop control center, model hub and inference studio for local AI (Ollama)"
 arch=('x86_64')
